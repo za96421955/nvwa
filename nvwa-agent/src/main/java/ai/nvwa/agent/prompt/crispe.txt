@@ -1,0 +1,72 @@
+CRISPE框架
+Context（上下文）
+Roles（角色）
+Intent（意图）
+Scope（范围）
+Preset（预设）
+Exception（例外）
+
+提示词：问题 -> CRIPSE拆解 -> 向量库搜索 -> 问题融入Prompt -> 关联上下文 -> 提交LLM
+提问：提示词压缩 -> 压缩Prompt -> LLM可处理多达2被的内容
+模型：1、通用大模型；2、垂直模型（微调模型）；3、云API（OpenAI、DeepSeek、阿里百炼、腾讯混元）；4、本地部署
+回答：模型回答压缩 -> 增加个性回复内容
+知识图谱：Graph RAG，从文本中提取实体-关系，录入图数据库 pgvector（支持向量搜索的关系数据库）
+
+RAG输出准确率 = LLM准确率 * 语义搜索准确率 * RAG信息保存率
+如果三因素都 < 100%，那么准确率 < 直接LLM，适得其反
+
+向量块：512 tokens，重叠 25%，效率最高（数据来源：微软研究）
+
+## 精雕Embedding内容
+### 大文件
+```
+file: project_A.txt
+
+client contact: steve
+team members:
+person A
+person B
+email of person A
+email of person B
+role of person A
+role of person B
+desc of person A
+desc of person B
+```
+* 大文件整体录入，很多信息不够完全准确，效果很难满足预期
+
+### 按特性拆分文件
+```
+file: project_A.txt
+
+project name: project_A
+client contact: steve
+team members:
+adam smith
+jobs musk
+```
+
+```
+file: person_A.txt
+
+name: adam smith
+email: adam.smith@xxx.com
+role: engineer
+desc: rock climbing
+project: project_A（双向关联）
+```
+* 按特性拆分文件，再将内容双向关联，虽然文件很小，不一定符合RAG，但有时效果会很好
+
+
+
+
+
+
+
+
+
+
+
+
+
+

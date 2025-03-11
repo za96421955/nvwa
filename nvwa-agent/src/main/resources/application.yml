@@ -1,0 +1,75 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    session:
+      timeout: 10
+  tomcat:
+    uri-encoding: utf-8
+
+spring:
+  profiles:
+      active: dev
+  application:
+      name: nvwa-models
+
+#  datasource:
+#    url: jdbc:mysql://127.0.0.1:3306/nvwa?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
+#    username: root
+#    password: cimfor1018
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+  shardingsphere:
+    props:
+      sql:
+        show: true
+    datasource:
+      names: m0
+      m0:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://127.0.0.1:3306/nvwa?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
+        username: root
+        password: cimfor1018
+    sharding:
+      master-slave-rules:
+        m0:
+          master-data-source-name: m0
+          slave-data-source-names[0]: s0
+      default-database-strategy:
+        none: none
+      default-table-strategy:
+        none: none
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 1
+    password:
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 4
+        min-idle: 4
+
+mybatis:
+  mapper-locations: "classpath*:mapper/**/*.xml"
+
+# log setting
+logging:
+  level:
+    com:
+      alibaba:
+        nacos:
+          client:
+            naming: warn
+
+# 内部调用超时时间
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+
+
+
