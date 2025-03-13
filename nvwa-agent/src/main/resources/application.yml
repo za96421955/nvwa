@@ -42,7 +42,7 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
-    database: 1
+    database: 0
     password:
     jedis:
       pool:
@@ -71,5 +71,10 @@ feign:
         connectTimeout: 5000
         readTimeout: 10000
 
-
+tools:
+  datastores:
+    milvus:
+      uri: http://localhost:19530
+      token: root:Milvus
+      dbName: nvwa
 

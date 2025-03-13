@@ -1,40 +1,31 @@
-package ai.nvwa.agent.tool.datastore.milvus;
+package ai.nvwa.agent.tool.datastore.milvus.structrue;
 
 import io.milvus.param.Constant;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
-import io.milvus.v2.service.partition.request.*;
-import io.milvus.v2.service.utility.request.AlterAliasReq;
-import io.milvus.v2.service.utility.request.CreateAliasReq;
-import io.milvus.v2.service.utility.request.DescribeAliasReq;
-import io.milvus.v2.service.utility.request.ListAliasesReq;
-import io.milvus.v2.service.utility.response.DescribeAliasResp;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Milvus集合服务
+ * Milvus集合
  * <p> <功能详细描述> </p>
  *
  * @author 陈晨
  */
+@Component
 public class MilvusCollection {
 
-    private final MilvusClientV2 client;
-
-    private MilvusCollection(MilvusClientV2 client) {
-        this.client = client;
-    }
-
-    public static MilvusCollection init(MilvusClientV2 client) {
-        return new MilvusCollection(client);
-    }
+    @Autowired
+    private MilvusClientV2 client;
+    @Autowired
+    private MilvusPartition partition;
 
     /**
      * @description 查询集合列表
@@ -42,7 +33,7 @@ public class MilvusCollection {
      *
      * @author 陈晨
      */
-    public List<String> queryCollections() {
+    public List<String> queryAllNames() {
         return client.listCollections().getCollectionNames();
     }
 
@@ -52,11 +43,11 @@ public class MilvusCollection {
      *
      * @author 陈晨
      */
-    public boolean checkCollection(String collectionName) {
+    public boolean check(String collectionName) {
         if (StringUtils.isBlank(collectionName)) {
             return false;
         }
-        return this.queryCollections().contains(collectionName);
+        return this.queryAllNames().contains(collectionName);
     }
 
     /**
@@ -65,7 +56,7 @@ public class MilvusCollection {
      *
      * @author 陈晨
      */
-    public DescribeCollectionResp queryCollection(String collectionName) {
+    public DescribeCollectionResp query(String collectionName) {
         if (StringUtils.isBlank(collectionName)) {
             return null;
         }
@@ -85,7 +76,7 @@ public class MilvusCollection {
      *
      * @author 陈晨
      */
-    public boolean loadCollection(String collectionName) {
+    public boolean load(String collectionName) {
         if (StringUtils.isBlank(collectionName)) {
             return false;
         }
@@ -110,10 +101,10 @@ public class MilvusCollection {
      *
      * @author 陈晨
      */
-    public void releaseCollection(String collectionName) {
-        if (!this.checkCollection(collectionName)) {
-            return;
-        }
+    public void release(String collectionName) {
+//        if (!this.check(collectionName)) {
+//            return;
+//        }
         // 释放集合
         ReleaseCollectionReq releaseCollectionReq = ReleaseCollectionReq.builder()
                 .collectionName(collectionName)
@@ -135,12 +126,11 @@ public class MilvusCollection {
             return false;
         }
         // 检查集合, 已存在则直接返回
-        if (this.checkCollection(createReq.getCollectionName())) {
+        if (this.check(createReq.getCollectionName())) {
             return false;
         }
         client.createCollection(createReq);
-        // 加载集合
-        return this.loadCollection(createReq.getCollectionName());
+        return this.check(createReq.getCollectionName());
     }
 
     /**
@@ -253,7 +243,7 @@ public class MilvusCollection {
      *
      * @author 陈晨
      */
-    public void collectionSetTTL(String collectionName, int ttl) {
+    public void ttl(String collectionName, int ttl) {
         if (StringUtils.isBlank(collectionName)) {
             return;
         }
@@ -274,223 +264,15 @@ public class MilvusCollection {
         if (StringUtils.isBlank(collectionName)) {
             return;
         }
-        // 释放分区
-        this.releasePartition(collectionName);
+        // 删除分区
+        partition.drop(collectionName);
         // 释放集合
-        this.releaseCollection(collectionName);
+        this.release(collectionName);
         // 删除集合
         DropCollectionReq dropQuickSetupParam = DropCollectionReq.builder()
                 .collectionName(collectionName)
                 .build();
         client.dropCollection(dropQuickSetupParam);
-    }
-
-    /**
-     * @description 创建别名
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public void createAlias(String collectionName, String alias) {
-        if (StringUtils.isBlank(collectionName) || StringUtils.isBlank(alias)) {
-            return;
-        }
-        // 9. Manage aliases
-        // 9.1 Create alias
-        CreateAliasReq createAliasReq = CreateAliasReq.builder()
-                .collectionName(collectionName)
-                .alias(alias)
-                .build();
-        client.createAlias(createAliasReq);
-    }
-
-    /**
-     * @description 更改别名
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public void alterAlias(String collectionName, String newAlias) {
-        if (StringUtils.isBlank(collectionName) || StringUtils.isBlank(newAlias)) {
-            return;
-        }
-        // 9.4 Reassign alias to other collections
-        AlterAliasReq alterAliasReq = AlterAliasReq.builder()
-                .collectionName(collectionName)
-                .alias(newAlias)
-                .build();
-        client.alterAlias(alterAliasReq);
-    }
-
-    /**
-     * @description 查询别名列表
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public List<String> queryAliases(String collectionName) {
-        if (StringUtils.isBlank(collectionName)) {
-            return Collections.emptyList();
-        }
-        // 9.2 List alises
-        ListAliasesReq listAliasesReq = ListAliasesReq.builder()
-                .collectionName(collectionName)
-                .build();
-        return client.listAliases(listAliasesReq).getAlias();
-    }
-
-    /**
-     * @description 查询指定别名
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public DescribeAliasResp queryAlias(String alias) {
-        if (StringUtils.isBlank(alias)) {
-            return null;
-        }
-        // 9.3 Describe alias
-        DescribeAliasReq describeAliasReq = DescribeAliasReq.builder()
-                .alias(alias)
-                .build();
-        return client.describeAlias(describeAliasReq);
-    }
-
-    /**
-     * @description 查询分区列表
-     * <p>
-     *     在创建集合时，Milvus 还会在集合中创建一个名为 _default 的分区
-     *     如果不打算添加任何其他分区，则插入集合的所有实体都将进入 default 分区，并且所有搜索和查询也会在 default 分区内执行
-     *     可以添加更多分区，并根据特定条件将实体插入其中。然后，您可以将搜索和查询限制在某些分区内，从而提高搜索性能
-     *     一个集合最多可以有 1,024 个分区
-     * </p>
-     *
-     * @author 陈晨
-     */
-    public List<String> queryPartitions(String collectionName) {
-        if (!this.checkCollection(collectionName)) {
-            return Collections.emptyList();
-        }
-        ListPartitionsReq listPartitionsReq = ListPartitionsReq.builder()
-                .collectionName(collectionName)
-                .build();
-        return client.listPartitions(listPartitionsReq);
-    }
-
-    /**
-     * @description 检查分区
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public boolean checkPartition(String collectionName, String partitionName) {
-        if (StringUtils.isBlank(collectionName) || StringUtils.isBlank(partitionName)) {
-            return false;
-        }
-        HasPartitionReq hasPartitionReq = HasPartitionReq.builder()
-                .collectionName(collectionName)
-                .partitionName(partitionName)
-                .build();
-        return client.hasPartition(hasPartitionReq);
-    }
-
-    /**
-     * @description 创建分区, 返回分区列表
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public List<String> createPartition(String collectionName, String partitionName) {
-        if (StringUtils.isBlank(collectionName) || StringUtils.isBlank(partitionName)) {
-            return Collections.emptyList();
-        }
-        CreatePartitionReq createPartitionReq = CreatePartitionReq.builder()
-                .collectionName(collectionName)
-                .partitionName(partitionName)
-                .build();
-        client.createPartition(createPartitionReq);
-        return this.queryPartitions(collectionName);
-    }
-
-    /**
-     * @description 加载分区, 返回分区加载状态
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public boolean loadPartition(String collectionName, String partitionName) {
-        if (StringUtils.isBlank(collectionName) || StringUtils.isBlank(partitionName)) {
-            return false;
-        }
-        LoadPartitionsReq loadPartitionsReq = LoadPartitionsReq.builder()
-                .collectionName(collectionName)
-                .partitionNames(Collections.singletonList(partitionName))
-                .build();
-        client.loadPartitions(loadPartitionsReq);
-        // load state
-        GetLoadStateReq getLoadStateReq = GetLoadStateReq.builder()
-                .collectionName(collectionName)
-                .partitionName(partitionName)
-                .build();
-        return client.getLoadState(getLoadStateReq);
-    }
-
-    /**
-     * @description 释放集合分区
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public void releasePartition(String collectionName) {
-        if (!this.checkCollection(collectionName)) {
-            return;
-        }
-        List<String> partitionNameList = this.queryPartitions(collectionName);
-        if (CollectionUtils.isEmpty(partitionNameList)) {
-            return;
-        }
-        ReleasePartitionsReq releasePartitionsReq = ReleasePartitionsReq.builder()
-                .collectionName(collectionName)
-                .partitionNames(partitionNameList)
-                .build();
-        client.releasePartitions(releasePartitionsReq);
-    }
-
-    /**
-     * @description 释放集合指定分区
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public void releasePartition(String collectionName, String partitionName) {
-        if (StringUtils.isBlank(collectionName) || StringUtils.isBlank(partitionName)) {
-            return;
-        }
-        ReleasePartitionsReq releasePartitionsReq = ReleasePartitionsReq.builder()
-                .collectionName(collectionName)
-                .partitionNames(Collections.singletonList(partitionName))
-                .build();
-        client.releasePartitions(releasePartitionsReq);
-    }
-
-    /**
-     * @description 删除分区
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
-    public void dropPartition(String collectionName, String partitionName) {
-        if (StringUtils.isBlank(collectionName) || StringUtils.isBlank(partitionName)) {
-            return;
-        }
-        // 1, 释放分区
-        this.releasePartition(collectionName, partitionName);
-        // 2, 删除分区
-        DropPartitionReq dropPartitionReq = DropPartitionReq.builder()
-                .collectionName(collectionName)
-                .partitionName(partitionName)
-                .build();
-        client.dropPartition(dropPartitionReq);
     }
 
 }

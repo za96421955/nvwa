@@ -1,19 +1,18 @@
-package ai.nvwa.agent.tool.datastore.milvus;
+package ai.nvwa.agent.tool.datastore.milvus.search;
 
+import ai.nvwa.agent.tool.datastore.milvus.mode.MilvusQuery;
+import ai.nvwa.agent.tool.datastore.milvus.structrue.MilvusCollection;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
-import io.milvus.v2.service.vector.request.GetReq;
-import io.milvus.v2.service.vector.request.QueryIteratorReq;
-import io.milvus.v2.service.vector.request.QueryReq;
-import io.milvus.v2.service.vector.request.SearchReq;
+import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.BaseVector;
-import io.milvus.v2.service.vector.response.GetResp;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
-import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
@@ -59,42 +58,47 @@ import java.util.*;
  *
  * @author 陈晨
  */
+@Component
 public class MilvusSearch {
 
-    private final MilvusClientV2 client;
+    @Autowired
+    private MilvusClientV2 client;
+    @Autowired
+    private MilvusCollection collection;
 
-    private MilvusSearch(MilvusClientV2 client) {
-        this.client = client;
+    // SearchReq
+    public List<List<SearchResp.SearchResult>> search(SearchReq request) {
+        return client.search(request).getSearchResults();
     }
-    public static MilvusSearch init(MilvusClientV2 client) {
-        return new MilvusSearch(client);
+
+    // HybridSearchReq
+    public List<List<SearchResp.SearchResult>> search(HybridSearchReq request) {
+        return client.hybridSearch(request).getSearchResults();
     }
 
-    @Data
-    public static class Query {
-        private String collectionName;
-        private List<String> partitionNames;
-        private List<BaseVector> vectors;
-        private int topK;
-        private String filter;
-        private List<String> outputFields;
-        private Map<String, Object> searchParams;
-        private String groupField;
-        private int groupSize;
-        private int page;
-        private long pageSize;
+    // GetReq
+    public List<QueryResp.QueryResult> search(GetReq request) {
+        return client.get(request).getGetResults();
+    }
 
-        public Query(String collectionName, List<BaseVector> vectors, int topK) {
-            this.collectionName = collectionName;
-            this.vectors = vectors;
-            this.topK = topK;
-        }
+    // QueryReq
+    public List<QueryResp.QueryResult> search(QueryReq request) {
+        return client.query(request).getQueryResults();
+    }
 
-        public Query(String collectionName, BaseVector vector, int topK) {
-            this.collectionName = collectionName;
-            this.vectors = Collections.singletonList(vector);
-            this.topK = topK;
+    // QueryIteratorReq
+    public List<QueryResultsWrapper.RowRecord> search(QueryIteratorReq request) {
+        QueryIterator iterator = client.queryIterator(request);
+        List<QueryResultsWrapper.RowRecord> resultsAll = new ArrayList<>();
+        while (true) {
+            List<QueryResultsWrapper.RowRecord> results = iterator.next();
+            if (results.isEmpty()) {
+                iterator.close();
+                break;
+            }
+            resultsAll.addAll(results);
         }
+        return resultsAll;
     }
 
     /**
@@ -107,11 +111,13 @@ public class MilvusSearch {
      *
      * @author 陈晨
      */
-    public List<List<SearchResp.SearchResult>> search(Query query) {
+    public List<List<SearchResp.SearchResult>> search(MilvusQuery query) {
+//        if (!collection.check(query.getCollectionName())) {
+//            return Collections.emptyList();
+//        }
         // 加载collection
-        MilvusCollection.init(client).loadCollection(query.getCollectionName());
+        collection.load(query.getCollectionName());
         // 查询
-//        FloatVec queryVector = new FloatVec(new float[]{0.3580376395471989f, -0.6023495712049978f, 0.18414012509913835f, -0.26286205330961354f, 0.9029438446296592f});
         SearchReq searchReq = SearchReq.builder()
                 .collectionName(query.getCollectionName())
                 .data(query.getVectors())
@@ -165,7 +171,11 @@ public class MilvusSearch {
      * @author 陈晨
      */
     public List<List<SearchResp.SearchResult>> vectorSearch(String collectionName, List<BaseVector> vectors) {
-        return this.search(new Query(collectionName, vectors, 10));
+        return this.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .data(vectors)
+                .topK(10)
+                .build());
     }
 
     /**
@@ -175,7 +185,11 @@ public class MilvusSearch {
      * @author 陈晨
      */
     public List<SearchResp.SearchResult> singleVectorSearch(String collectionName, BaseVector vector) {
-        List<List<SearchResp.SearchResult>> resultList = this.search(new Query(collectionName, vector, 10));
+        List<List<SearchResp.SearchResult>> resultList = this.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .data(Collections.singletonList(vector))
+                .topK(10)
+                .build());
         if (CollectionUtils.isEmpty(resultList)) {
             return Collections.emptyList();
         }
@@ -189,12 +203,15 @@ public class MilvusSearch {
      * @author 陈晨
      */
     public List<List<SearchResp.SearchResult>> filterSearch(String collectionName, List<BaseVector> vectors, String filter) {
-        Query query = new Query(collectionName, vectors, 10);
-        query.setFilter(filter);
-        // 要使用迭代筛选执行筛选搜索，您可以执行以下作
-        // TODO 没理解参数的含义
-        query.setSearchParams(Collections.singletonMap("hints", "iterative_filter"));
-        return this.search(query);
+        return this.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .data(vectors)
+                .topK(10)
+                .filter(filter)
+                // 要使用迭代筛选执行筛选搜索，您可以执行以下作
+                // TODO 没理解参数的含义
+                .searchParams(Collections.singletonMap("hints", "iterative_filter"))
+                .build());
     }
 
     /**
@@ -208,12 +225,15 @@ public class MilvusSearch {
             // 范围参数错误, 0 - 1 之间
             return Collections.emptyList();
         }
-        Query query = new Query(collectionName, vectors, 10);
         Map<String,Object> extraParams = new HashMap<>();
         extraParams.put("radius", radius);
         extraParams.put("range_filter", rangeFilter);
-        query.setSearchParams(extraParams);
-        return this.search(query);
+        return this.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .data(vectors)
+                .topK(10)
+                .searchParams(extraParams)
+                .build());
     }
 
     /**
@@ -231,8 +251,7 @@ public class MilvusSearch {
         if (StringUtils.isNotBlank(partitionName)) {
             request.setPartitionName(partitionName);
         }
-        GetResp resp = client.get(request);
-        return resp.getGetResults();
+        return this.search(request);
     }
 
     /**
@@ -251,8 +270,7 @@ public class MilvusSearch {
         if (StringUtils.isNotBlank(partitionName)) {
             request.setPartitionNames(Collections.singletonList(partitionName));
         }
-        QueryResp resp = client.query(request);
-        return resp.getQueryResults();
+        return this.search(request);
     }
 
     /**
@@ -272,17 +290,7 @@ public class MilvusSearch {
         if (StringUtils.isNotBlank(partitionName)) {
             request.setPartitionNames(Collections.singletonList(partitionName));
         }
-        QueryIterator iterator = client.queryIterator(request);
-        List<QueryResultsWrapper.RowRecord> resultsAll = new ArrayList<>();
-        while (true) {
-            List<QueryResultsWrapper.RowRecord> results = iterator.next();
-            if (results.isEmpty()) {
-                iterator.close();
-                break;
-            }
-            resultsAll.addAll(results);
-        }
-        return resultsAll;
+        return this.search(request);
     }
 
 }

@@ -1,7 +1,7 @@
-package ai.nvwa.agent.tool.datastore.milvus;
+package ai.nvwa.agent.tool.datastore.milvus.demo;
 
 import ai.nvwa.agent.model.embedding.EmbeddingService;
-import ai.nvwa.agent.tool.datastore.MilvusDemo;
+import ai.nvwa.agent.tool.datastore.milvus.structrue.MilvusData;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.milvus.v2.client.MilvusClientV2;
@@ -22,6 +22,8 @@ import io.milvus.v2.service.vector.request.ranker.WeightedRanker;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
@@ -32,16 +34,13 @@ import java.util.*;
  *
  * @author 陈晨
  */
+@Component
 public class MilvusHybridSearch {
 
-    private final MilvusClientV2 client;
-
-    private MilvusHybridSearch(MilvusClientV2 client) {
-        this.client = client;
-    }
-    public static MilvusHybridSearch init(MilvusClientV2 client) {
-        return new MilvusHybridSearch(client);
-    }
+    @Autowired
+    private MilvusClientV2 client;
+    @Autowired
+    private MilvusData data;
 
     /**
      * @description 生成Schema
@@ -121,13 +120,12 @@ public class MilvusHybridSearch {
         public Text(String text) {
             this.embeddingService = new EmbeddingService();
             this.text = text;
-            this.denseVectors = embeddingService.getTextDenseVectors(this.text);
+            this.denseVectors = embeddingService.getTextDenseVectors(this.text, 768);
             this.sparseVectors = embeddingService.toSparseVector(this.denseVectors);
             if (this.denseVectors.size() != 768) {
                 throw new IllegalArgumentException("Dense vector dimension must be 768!");
             }
         }
-
     }
 
     /**
@@ -136,7 +134,7 @@ public class MilvusHybridSearch {
      *
      * @author 陈晨
      */
-    public InsertResp insertData(String collectionName) {
+    public long insertData(String collectionName) {
         Gson gson = new Gson();
         JsonObject row1 = new JsonObject();
         Text text1 = new Text("Artificial intelligence was founded as an academic discipline in 1956.");
@@ -159,12 +157,14 @@ public class MilvusHybridSearch {
         row3.add("dense", gson.toJsonTree(text3.getDenseVectors()));
         row3.add("sparse", gson.toJsonTree(text3.getSparseVectors()));
 
-        List<JsonObject> data = Arrays.asList(row1, row2, row3);
-        InsertReq insertReq = InsertReq.builder()
-                .collectionName(collectionName)
-                .data(data)
-                .build();
-        return client.insert(insertReq);
+        List<JsonObject> rows = Arrays.asList(row1, row2, row3);
+        return data.insert(collectionName, rows);
+
+//        InsertReq insertReq = InsertReq.builder()
+//                .collectionName(collectionName)
+//                .data(data)
+//                .build();
+//        return client.insert(insertReq);
     }
 
     /**
@@ -227,41 +227,41 @@ public class MilvusHybridSearch {
         return rrf;
     }
 
-    public static void main(String[] args) {
-        MilvusClientV2 client = MilvusClient.connect(MilvusDemo.CLUSTER_ENDPOINT);
-        MilvusCollection collection = MilvusCollection.init(client);
-        MilvusHybridSearch hybrid = new MilvusHybridSearch(client);
-
-        String collectionName = "hybrid_search_collection";
-        // 删除集合
-        collection.drop(collectionName);
-        // 生成Schema
-        CreateCollectionReq.CollectionSchema schema = hybrid.generateSchema();
-        // 生成索引
-        List<IndexParam> indexParams = hybrid.generateIndex();
-        // 创建集合
-        collection.create(collectionName, schema, indexParams);
-        // 插入数据
-        InsertResp result = hybrid.insertData(collectionName);
-        System.out.println("\n\n插入数据：");
-        System.out.println(result);
-        // 生成查询对象
-        List<AnnSearchReq> searchRequests = hybrid.generateSearch();
-        // 生成重新排名策略
-        BaseRanker reranker = hybrid.generateReranker();
-
-        // 查询
-        HybridSearchReq hybridSearchReq = HybridSearchReq.builder()
-                .collectionName(collectionName)
-                .searchRequests(searchRequests)
-                .ranker(reranker)
-                .topK(2)
-                .consistencyLevel(ConsistencyLevel.BOUNDED)
-                .build();
-        SearchResp searchResp = client.hybridSearch(hybridSearchReq);
-        System.out.println("\n\n查询数据：");
-        System.out.println(searchResp);
-    }
+//    public static void main(String[] args) {
+//        MilvusClientV2 client = MilvusClient.connect(MilvusClient.CLUSTER_ENDPOINT);
+//        MilvusCollection collection = MilvusCollection.init(client);
+//        MilvusHybridSearch hybrid = new MilvusHybridSearch(client);
+//
+//        String collectionName = "hybrid_search_collection";
+//        // 删除集合
+//        collection.drop(collectionName);
+//        // 生成Schema
+//        CreateCollectionReq.CollectionSchema schema = hybrid.generateSchema();
+//        // 生成索引
+//        List<IndexParam> indexParams = hybrid.generateIndex();
+//        // 创建集合
+//        collection.create(collectionName, schema, indexParams);
+//        // 插入数据
+//        InsertResp result = hybrid.insertData(collectionName);
+//        System.out.println("\n\n插入数据：");
+//        System.out.println(result);
+//        // 生成查询对象
+//        List<AnnSearchReq> searchRequests = hybrid.generateSearch();
+//        // 生成重新排名策略
+//        BaseRanker reranker = hybrid.generateReranker();
+//
+//        // 查询
+//        HybridSearchReq hybridSearchReq = HybridSearchReq.builder()
+//                .collectionName(collectionName)
+//                .searchRequests(searchRequests)
+//                .ranker(reranker)
+//                .topK(2)
+//                .consistencyLevel(ConsistencyLevel.BOUNDED)
+//                .build();
+//        SearchResp searchResp = client.hybridSearch(hybridSearchReq);
+//        System.out.println("\n\n查询数据：");
+//        System.out.println(searchResp);
+//    }
 
 }
 

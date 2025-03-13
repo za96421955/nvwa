@@ -1,6 +1,6 @@
-package ai.nvwa.agent.tool.datastore.milvus;
+package ai.nvwa.agent.tool.datastore.milvus.demo;
 
-import ai.nvwa.agent.tool.datastore.MilvusDemo;
+import ai.nvwa.agent.tool.datastore.milvus.structrue.MilvusData;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.milvus.common.clientenum.FunctionType;
@@ -12,7 +12,8 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.response.InsertResp;
-import io.milvus.v2.service.vector.response.QueryResp;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
@@ -23,16 +24,13 @@ import java.util.*;
  *
  * @author 陈晨
  */
+@Component
 public class MilvusTextMatch {
 
-    private final MilvusClientV2 client;
-
-    private MilvusTextMatch(MilvusClientV2 client) {
-        this.client = client;
-    }
-    public static MilvusTextMatch init(MilvusClientV2 client) {
-        return new MilvusTextMatch(client);
-    }
+    @Autowired
+    private MilvusClientV2 client;
+    @Autowired
+    private MilvusData data;
 
     /**
      * @description 生成Schema
@@ -107,7 +105,7 @@ public class MilvusTextMatch {
      *
      * @author 陈晨
      */
-    public InsertResp insertData(String collectionName) {
+    public long insertData(String collectionName) {
         Gson gson = new Gson();
         List<JsonObject> rows = Arrays.asList(
                 gson.fromJson("{\"text\": \"自然语言处理技术通过分析大量文本数据，显著提升了机器翻译的准确性和流畅度。\"}", JsonObject.class),
@@ -116,10 +114,12 @@ public class MilvusTextMatch {
                 gson.fromJson("{\"text\": \"在数字孪生城市构建中，多源异构数据的实时融合与可视化呈现至关重要。\"}", JsonObject.class),
                 gson.fromJson("{\"text\": \"元宇宙概念的兴起推动了虚拟现实与增强现实技术的深度融合与创新应用。\"}", JsonObject.class)
         );
-        return client.insert(InsertReq.builder()
-                .collectionName(collectionName)
-                .data(rows)
-                .build());
+        return data.insert(collectionName, rows);
+
+//        return client.insert(InsertReq.builder()
+//                .collectionName(collectionName)
+//                .data(rows)
+//                .build());
     }
 
     /**
@@ -146,32 +146,32 @@ public class MilvusTextMatch {
 //                .build();
     }
 
-    public static void main(String[] args) {
-        MilvusClientV2 client = MilvusClient.connect(MilvusDemo.CLUSTER_ENDPOINT);
-        MilvusCollection collection = MilvusCollection.init(client);
-        MilvusTextMatch textMatch = new MilvusTextMatch(client);
-
-        String collectionName = "text_match_search_collection";
-        // 删除集合
-        collection.drop(collectionName);
-        // 生成Schema
-        CreateCollectionReq.CollectionSchema schema = textMatch.generateSchema();
-        // 生成索引
-        List<IndexParam> indexParams = textMatch.generateIndex();
-        // 创建集合
-        collection.create(collectionName, schema, indexParams);
-        // 插入数据
-        InsertResp result = textMatch.insertData(collectionName);
-        System.out.println("\n\n插入数据：");
-        System.out.println(result);
-        // 生成查询对象
-        QueryReq query = textMatch.generateSearch(collectionName);
-
-        // 查询
-        QueryResp resp = client.query(query);
-        System.out.println("\n\n查询数据：");
-        System.out.println(resp);
-    }
+//    public static void main(String[] args) {
+//        MilvusClientV2 client = MilvusClient.connect(MilvusClient.CLUSTER_ENDPOINT);
+//        MilvusCollection collection = MilvusCollection.init(client);
+//        MilvusTextMatch textMatch = new MilvusTextMatch(client);
+//
+//        String collectionName = "text_match_search_collection";
+//        // 删除集合
+//        collection.drop(collectionName);
+//        // 生成Schema
+//        CreateCollectionReq.CollectionSchema schema = textMatch.generateSchema();
+//        // 生成索引
+//        List<IndexParam> indexParams = textMatch.generateIndex();
+//        // 创建集合
+//        collection.create(collectionName, schema, indexParams);
+//        // 插入数据
+//        InsertResp result = textMatch.insertData(collectionName);
+//        System.out.println("\n\n插入数据：");
+//        System.out.println(result);
+//        // 生成查询对象
+//        QueryReq query = textMatch.generateSearch(collectionName);
+//
+//        // 查询
+//        QueryResp resp = client.query(query);
+//        System.out.println("\n\n查询数据：");
+//        System.out.println(resp);
+//    }
 
 }
 

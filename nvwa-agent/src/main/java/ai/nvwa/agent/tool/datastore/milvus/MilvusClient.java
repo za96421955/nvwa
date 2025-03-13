@@ -2,6 +2,10 @@ package ai.nvwa.agent.tool.datastore.milvus;
 
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Milvus客户端
@@ -10,8 +14,8 @@ import io.milvus.v2.client.MilvusClientV2;
  * @author 陈晨
  */
 public abstract class MilvusClient {
-    String CLUSTER_ENDPOINT = "http://localhost:19530";
-    String TOKEN = "root:Milvus";
+//    public static final String CLUSTER_ENDPOINT = "http://localhost:19530";
+//    public static final String TOKEN = "root:Milvus";
 
     private MilvusClient() {}
 

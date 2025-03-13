@@ -1,4 +1,4 @@
-package ai.nvwa.agent.tool.datastore.milvus;
+package ai.nvwa.agent.tool.datastore.milvus.structrue;
 
 import com.google.gson.JsonObject;
 import io.milvus.v2.client.MilvusClientV2;
@@ -9,6 +9,8 @@ import io.milvus.v2.service.vector.response.DeleteResp;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.UpsertResp;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -18,16 +20,13 @@ import java.util.List;
  *
  * @author 陈晨
  */
+@Component
 public class MilvusData {
 
-    private final MilvusClientV2 client;
-
-    private MilvusData(MilvusClientV2 client) {
-        this.client = client;
-    }
-    public static MilvusData init(MilvusClientV2 client) {
-        return new MilvusData(client);
-    }
+    @Autowired
+    private MilvusClientV2 client;
+//    @Autowired
+//    private MilvusCollection collection;
 
     /**
      * @description 插入数据
@@ -36,6 +35,9 @@ public class MilvusData {
      * @author 陈晨
      */
     public InsertResp insert(String collectionName, String partitionName, List<JsonObject> data) {
+//        if (!collection.check(collectionName)) {
+//            return null;
+//        }
 //        Gson gson = new Gson();
 //        List<JsonObject> data = Arrays.asList(
 //                gson.fromJson("{\"id\": 0, \"vector\": [0.3580376395471989f, -0.6023495712049978f, 0.18414012509913835f, -0.26286205330961354f, 0.9029438446296592f], \"color\": \"pink_8682\"}", JsonObject.class),
@@ -79,6 +81,9 @@ public class MilvusData {
      * @author 陈晨
      */
     public UpsertResp upsert(String collectionName, String partitionName, List<JsonObject> data) {
+//        if (!collection.check(collectionName)) {
+//            return null;
+//        }
 //        Gson gson = new Gson();
 //        List<JsonObject> data = Arrays.asList(
 //                gson.fromJson("{\"id\": 0, \"vector\": [-0.619954382375778, 0.4479436794798608, -0.17493894838751745, -0.4248030059917294, -0.8648452746018911], \"color\": \"black_9898\"}", JsonObject.class),
@@ -122,6 +127,9 @@ public class MilvusData {
      * @author 陈晨
      */
     public DeleteResp delete(String collectionName, String partitionName, String filter) {
+//        if (!collection.check(collectionName)) {
+//            return null;
+//        }
         DeleteReq deleteReq = DeleteReq.builder()
                 .collectionName(collectionName)
                 .filter(filter)
@@ -152,6 +160,9 @@ public class MilvusData {
      * @author 陈晨
      */
     public DeleteResp delete(String collectionName, String partitionName, List<Object> idList) {
+//        if (!collection.check(collectionName)) {
+//            return null;
+//        }
         DeleteReq deleteReq = DeleteReq.builder()
                 .collectionName(collectionName)
                 .ids(idList)

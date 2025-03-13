@@ -1,18 +1,23 @@
 package ai.nvwa.agent.model.embedding;
 
-import ai.nvwa.agent.model.CloudConfig;
+import ai.nvwa.agent.components.redis.RedisService;
+import ai.nvwa.agent.components.util.HashUtil;
 import ai.nvwa.agent.components.util.HttpClient;
+import ai.nvwa.agent.model.CloudConfig;
 import ai.nvwa.agent.model.ModelsEnum;
 import ai.nvwa.agent.model.embedding.mode.EmbeddingMultimodalRequest;
 import ai.nvwa.agent.model.embedding.mode.EmbeddingMultimodalResponse;
 import ai.nvwa.agent.model.embedding.mode.EmbeddingRequest;
 import ai.nvwa.agent.model.embedding.mode.EmbeddingResponse;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @description 嵌入服务
@@ -22,6 +27,10 @@ import java.util.Map;
  */
 @Service
 public class EmbeddingService {
+    private static final String TEXT_DENSE = "nvwa:ds:milvus:dense:text:";
+
+    @Autowired
+    private RedisService redisService;
 
     /**
      * @description 获取多模态密集向量
@@ -30,12 +39,19 @@ public class EmbeddingService {
      * @author 陈晨
      */
     public List<Float> getMultimodalDenseVectors(String text) {
+        String key = TEXT_DENSE + HashUtil.hash32(text);
+        List<Double> densesCache = redisService.getList(key);
+        if (!CollectionUtils.isEmpty(densesCache)) {
+            return densesCache.stream().map(Double::floatValue).collect(Collectors.toList());
+        }
         String result = HttpClient.post(CloudConfig.Alibaba.Url.EMBEDDING_MULTIMODAL)
                 .authorization(CloudConfig.Alibaba.AUTH)
                 .body(EmbeddingMultimodalRequest.text(text).toString())
                 .asString();
         EmbeddingMultimodalResponse response = JSONObject.parseObject(result, EmbeddingMultimodalResponse.class);
-        return response.getOutput().getEmbeddings().get(0).getEmbedding();
+        List<Float> denses = response.getOutput().getEmbeddings().get(0).getEmbedding();
+        redisService.setList(key, denses);
+        return denses;
     }
 
     /**
@@ -44,13 +60,20 @@ public class EmbeddingService {
      *
      * @author 陈晨
      */
-    public List<Float> getTextDenseVectors(String text) {
+    public List<Float> getTextDenseVectors(String text, int dimension) {
+        String key = TEXT_DENSE + HashUtil.hash32(text) + ":" + dimension;
+        List<Double> densesCache = redisService.getList(key);
+        if (!CollectionUtils.isEmpty(densesCache)) {
+            return densesCache.stream().map(Double::floatValue).collect(Collectors.toList());
+        }
         String result = HttpClient.post(CloudConfig.Alibaba.Url.EMBEDDING)
                 .authorization(CloudConfig.Alibaba.AUTH)
-                .body(new EmbeddingRequest(ModelsEnum.TEXT_EMBEDDING_V3).input(text).dimensions(768).toString())
+                .body(new EmbeddingRequest(ModelsEnum.TEXT_EMBEDDING_V3).input(text).dimensions(dimension).toString())
                 .asString();
         EmbeddingResponse response = JSONObject.parseObject(result, EmbeddingResponse.class);
-        return response.getData().get(0).getEmbedding();
+        List<Float> denses = response.getData().get(0).getEmbedding();
+        redisService.setList(key, denses);
+        return denses;
     }
 
     /**
@@ -62,22 +85,13 @@ public class EmbeddingService {
     public Map<Integer, Float> toSparseVector(List<Float> denseVectors) {
         Map<Integer, Float> sparseVectors = new HashMap<>();
         for (int i = 0; i < denseVectors.size(); i++) {
-            if (denseVectors.get(i) > 0) {
-                sparseVectors.put(i, denseVectors.get(i));
+            float vector = denseVectors.get(i);
+            if (vector > 0) {
+                sparseVectors.put(i, vector);
             }
         }
         return sparseVectors;
     }
-
-//    public static void main(String[] args) {
-//        String text = "Artificial intelligence was founded as an academic discipline in 1956.";
-//
-//        EmbeddingService embeddingService = new EmbeddingService();
-//        List<Float> denseVectors = embeddingService.getTextDenseVectors(text);
-//        System.out.println(denseVectors);
-//        System.out.println("size: " + denseVectors.size());
-////        Map<Integer, Float> sparseVectors = embeddingService.toSparseVector(denseVectors);
-//    }
 
 }
 

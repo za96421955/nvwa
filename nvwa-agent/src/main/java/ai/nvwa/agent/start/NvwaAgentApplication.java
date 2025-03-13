@@ -1,4 +1,4 @@
-package ai.nvwa.agent;
+package ai.nvwa.agent.start;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
