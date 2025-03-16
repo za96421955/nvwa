@@ -1,6 +1,7 @@
 package ai.nvwa.agent.arrange;
 
 import ai.nvwa.agent.tool.extension.Extension;
+import ai.nvwa.agent.tool.function.Function;
 
 import java.util.List;
 
@@ -42,7 +43,7 @@ public interface Agent {
      *
      * @author 陈晨
      */
-    List<Extension> association();
+    List<Function> association();
 
     /**
      * @description 提示词

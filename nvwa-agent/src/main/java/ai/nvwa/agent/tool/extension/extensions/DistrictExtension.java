@@ -16,14 +16,13 @@ import java.util.List;
  *
  * @author 陈晨
  */
-// name = action + Extension
 @Component("districtExtension")
 public class DistrictExtension implements Extension {
     public static final String TENCENT_KEY = "6R4BZ-MGICU-V6JVV-GN6KJ-QHVU2-BHF3J";
 
     @Override
     public String action() {
-        return "district";
+        return "districtExtension";
     }
 
     @Override

@@ -6,9 +6,10 @@ import ai.nvwa.agent.model.chat.mode.AlibabaChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatResponse;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
-import ai.nvwa.agent.prompt.ExtensionPrompt;
-import ai.nvwa.agent.prompt.ReAct;
+import ai.nvwa.agent.prompt.FunctionPrompt;
 import ai.nvwa.agent.tool.extension.Extension;
+import ai.nvwa.agent.tool.function.Function;
+import ai.nvwa.agent.tool.function.mode.Action;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
 public abstract class AbstractAgent implements Agent {
 
     @Autowired
-    protected Map<String, Extension> extensionMap;
+    protected Map<String, Function> functionMap;
     @Autowired
     protected ChatService chatService;
 
@@ -45,17 +46,17 @@ public abstract class AbstractAgent implements Agent {
     public String prompt() {
         StringBuilder descs = new StringBuilder();
         StringBuilder names = new StringBuilder("{");
-        for (Extension extension : this.association()) {
+        for (Function function : this.association()) {
             descs.append("```\n")
-                    .append("Action: ").append(extension.action()).append("\n")
-                    .append("Action Input: ").append(extension.inputFormat().toJSONString()).append("\n")
-                    .append(extension.desc()).append("\n")
+                    .append("Action: ").append(function.action()).append("\n")
+                    .append("Action Input: ").append(function.inputFormat().toJSONString()).append("\n")
+                    .append(function.desc()).append("\n")
                     .append("```\n");
-            names.append(extension.action()).append(",");
+            names.append(function.action()).append(",");
         }
-        return ExtensionPrompt.DEFAULT
-                .replaceFirst(ReAct.TOOL_DESC, descs.toString())
-                .replaceFirst(ReAct.TOOL_NAMES, names.toString());
+        return FunctionPrompt.DEFAULT
+                .replaceFirst(FunctionPrompt.TOOL_DESC, descs.toString())
+                .replaceFirst(FunctionPrompt.TOOL_NAMES, names.toString());
     }
 
     /**
@@ -109,20 +110,13 @@ public abstract class AbstractAgent implements Agent {
             }
             // 行动
             if (this.isPause(content)) {
-                String action = null;
-                JSONObject actionRequest = null;
-                try {
-                    action = this.getAction(content);
-                    actionRequest = this.getRequest(content);
-                    String actionResult = extensionMap.get(action + "Extension").call(actionRequest);
-//                    request.assistant(content).user("Action[" + action + "] Response: " + actionResult);
-                    request.user("Action[" + action + "] Response: " + actionResult);
-                } catch (Exception e) {
-                    log.error("[执行任务] action={}, request={}, Action执行异常, 当轮对话重试: {}",
-                            action, actionRequest, e.getMessage(), e);
-                    result.setErrorMsg(e.getMessage());
+                Action action = this.doAction(request, result, content);
+                if (null == action) {
+                    continue;
                 }
-                continue;
+                // 函数: 返回输入参数
+                answer = action.getInput().toJSONString();
+                break;
             }
             // 回答
             if (this.isAnswer(content)) {
@@ -142,17 +136,17 @@ public abstract class AbstractAgent implements Agent {
      *
      * @author 陈晨
      */
-    protected boolean isPause(String content) {
+    private boolean isPause(String content) {
         return content.contains("Action:") && content.contains("Action Input:");
     }
 
     /**
-     * @description 获取扩展方法名
+     * @description 获取方法名
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
      */
-    protected String getAction(String content) {
+    private String getAction(String content) {
         Pattern pattern = Pattern.compile(
                 "Action:\\s*" +             // 匹配 "Action: "（允许空格和制表符）
                 "(?i)" +                    // 忽略大小写（如 ACTION: Address）
@@ -174,12 +168,41 @@ public abstract class AbstractAgent implements Agent {
     }
 
     /**
-     * @description 获取扩展请求
+     * @description 执行Action
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
      */
-    protected JSONObject getRequest(String content) {
+    private Action doAction(ChatRequest request, ChatResult result, String content) {
+        Action action = null;
+        try {
+            action = Action.builder()
+                    .action(this.getAction(content))
+                    .input(this.getActionInput(content))
+                    .build();
+            Function function = functionMap.get(action.getAction());
+            if (function instanceof Extension) {
+                String actionResult = ((Extension) function).call(action.getInput());
+//                request.assistant(content).user("Action[" + action + "] Response: " + actionResult);
+                request.user("Action[" + action.getAction() + "] Response: " + actionResult);
+                return null;
+            }
+            return action;
+        } catch (Exception e) {
+            log.error("[执行任务] action={}, Action执行异常, 当轮对话重试: {}",
+                    action, e.getMessage(), e);
+            result.setErrorMsg(e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * @description 获取输入
+     * <p> <功能详细描述> </p>
+     *
+     * @author 陈晨
+     */
+    private JSONObject getActionInput(String content) {
         Pattern pattern = Pattern.compile("Action\\s+Input:\\s*(\\{[^{}]*\\})");
         Matcher matcher = pattern.matcher(content);
         if (matcher.find()) {
@@ -202,7 +225,7 @@ public abstract class AbstractAgent implements Agent {
      *
      * @author 陈晨
      */
-    protected boolean isAnswer(String content) {
+    private boolean isAnswer(String content) {
         return content.contains("Answer:");
     }
 
@@ -212,7 +235,7 @@ public abstract class AbstractAgent implements Agent {
      *
      * @author 陈晨
      */
-    protected String getAnswer(String content) {
+    private String getAnswer(String content) {
         // 匹配 Answer: 开头的内容（跨行支持）
         Pattern pattern = Pattern.compile(
                 "Answer[：:]\\s*" +      // 匹配 Answer:（支持中英文冒号）

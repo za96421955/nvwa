@@ -1,14 +1,12 @@
 package ai.nvwa.agent.prompt;
 
 /**
- * ReAct提示词
+ * 函数ReAct提示词
  * <p> <功能详细描述> </p>
  *
  * @author 陈晨
- * @version 1.0
- * @date 2025/3/16
  */
-public interface ExtensionPrompt {
+public interface FunctionPrompt {
 
     /**
      你被设计为帮助完成各种任务，从回答问题到提供总结到其他类型的分析。
@@ -113,7 +111,6 @@ public interface ExtensionPrompt {
             "Below is the current conversation consisting of interleaving human and assistant messages.";
     String TOOL_DESC = "\\{tool_desc\\}";
     String TOOL_NAMES = "\\{tool_names\\}";
-
 
 }
 

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
  *
  * @author 陈晨
  */
-// name = action + Extension
 @Component("weatherExtension")
 public class WeatherExtension implements Extension {
 
@@ -19,7 +18,7 @@ public class WeatherExtension implements Extension {
 
     @Override
     public String action() {
-        return "weather";
+        return "weatherExtension";
     }
 
     @Override

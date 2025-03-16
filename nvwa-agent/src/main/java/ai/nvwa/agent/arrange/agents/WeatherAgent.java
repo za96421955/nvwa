@@ -6,7 +6,7 @@ import ai.nvwa.agent.model.chat.mode.AlibabaChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatResponse;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
-import ai.nvwa.agent.tool.extension.Extension;
+import ai.nvwa.agent.tool.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -46,18 +46,19 @@ public class WeatherAgent extends AbstractAgent {
     }
 
     /**
-     * @description 关联扩展
+     * @description 关联函数/扩展
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
      */
     @Override
-    public List<Extension> association() {
-        List<Extension> extensions = new ArrayList<>();
+    public List<Function> association() {
+        List<Function> extensions = new ArrayList<>();
 //        extensions.add(extensionMap.get("baikeExtension"));
-        extensions.add(extensionMap.get("addressExtension"));
-        extensions.add(extensionMap.get("districtExtension"));
-        extensions.add(extensionMap.get("weatherExtension"));
+        extensions.add(functionMap.get("addressExtension"));
+        extensions.add(functionMap.get("districtExtension"));
+//        extensions.add(functionMap.get("weatherExtension"));
+        extensions.add(functionMap.get("clientWeatherFunction"));
         return extensions;
     }
 

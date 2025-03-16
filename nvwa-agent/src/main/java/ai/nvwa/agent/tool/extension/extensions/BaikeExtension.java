@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
  *
  * @author 陈晨
  */
-// name = action + Extension
 @Component("baikeExtension")
 public class BaikeExtension implements Extension {
 
@@ -21,7 +20,7 @@ public class BaikeExtension implements Extension {
 
     @Override
     public String action() {
-        return "baike";
+        return "baikeExtension";
     }
 
     @Override

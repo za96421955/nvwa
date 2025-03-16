@@ -14,13 +14,12 @@ import org.springframework.stereotype.Component;
  *
  * @author 陈晨
  */
-// name = action + Extension
-@Component("addressExtension")
+@Component
 public class AddressExtension implements Extension {
 
     @Override
     public String action() {
-        return "address";
+        return "addressExtension";
     }
 
     @Override
