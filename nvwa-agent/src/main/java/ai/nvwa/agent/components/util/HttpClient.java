@@ -11,6 +11,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -250,6 +251,39 @@ public class HttpClient {
         }
         return this;
     }
+
+    /**
+     * @description 获取客户端真实IP
+     * <p> <功能详细描述> </p>
+     *
+     * @author 陈晨
+     */
+	public static String getRemoteAddr(HttpServletRequest request) {
+		if (request == null) return null;
+		//
+		String remoteAddr;
+		// X-Forwarded-For
+		String xff = request.getHeader("X-Forwarded-For");
+		remoteAddr = (xff == null ? request.getHeader("x-forwarded-for") : xff);
+		// Proxy-Client-IP
+		if (remoteAddr == null || "".equals(remoteAddr)) {
+			String pci = request.getHeader("Proxy-Client-IP");
+			remoteAddr = (pci == null ? request.getHeader("proxy-client-ip") : pci);
+		}
+		// WL-Proxy-Client-IP
+		if (remoteAddr == null || "".equals(remoteAddr)) {
+			String wpci = request.getHeader("WL-Proxy-Client-IP");
+			remoteAddr = (wpci == null ? request.getHeader("wl-proxy-client-ip") : wpci);
+		}
+		// RemoteAddr
+		if (remoteAddr == null || "".equals(remoteAddr)) {
+			remoteAddr = request.getRemoteAddr();
+		} else {
+			remoteAddr = remoteAddr.split(",")[0];
+		}
+
+		return remoteAddr;
+	}
 
 }
 

@@ -5,10 +5,7 @@ import ai.nvwa.agent.components.util.HashUtil;
 import ai.nvwa.agent.components.util.HttpClient;
 import ai.nvwa.agent.model.CloudConfig;
 import ai.nvwa.agent.model.ModelsEnum;
-import ai.nvwa.agent.model.embedding.mode.EmbeddingMultimodalRequest;
-import ai.nvwa.agent.model.embedding.mode.EmbeddingMultimodalResponse;
-import ai.nvwa.agent.model.embedding.mode.EmbeddingRequest;
-import ai.nvwa.agent.model.embedding.mode.EmbeddingResponse;
+import ai.nvwa.agent.model.embedding.mode.*;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -91,6 +88,22 @@ public class EmbeddingService {
             }
         }
         return sparseVectors;
+    }
+
+    /**
+     * @description 获取嵌入内容
+     * <p> <功能详细描述> </p>
+     *
+     * @author 陈晨
+     */
+    public EmbeddingContent getEmbeddingContent(String content, int dimension) {
+        List<Float> denseVectors = this.getTextDenseVectors(content, dimension);
+        Map<Integer, Float> sparseVectors = this.toSparseVector(denseVectors);
+        return EmbeddingContent.builder()
+                .content(content)
+                .denseVectors(denseVectors)
+                .sparseVectors(sparseVectors)
+                .build();
     }
 
 }

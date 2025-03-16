@@ -5,12 +5,11 @@ import ai.nvwa.agent.model.CloudConfig;
 import ai.nvwa.agent.model.chat.mode.AlibabaChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatResponse;
+import ai.nvwa.agent.model.chat.mode.ChatResult;
 import ai.nvwa.agent.prompt.Prompt;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 对话服务
@@ -90,6 +89,30 @@ public class ChatService {
         });
     }
 
+    /**
+     * @description 对话, 流式响应
+     * <p> <功能详细描述> </p>
+     *
+     * @author 陈晨
+     */
+    public ChatResult chatByResult(ChatRequest request) {
+        ChatResult result = new ChatResult();
+        this.chat(request, (reasoning, content, usage) -> {
+            if (StringUtils.isNotBlank(reasoning)) {
+                result.getReasoning().append(reasoning);
+                System.out.println("思考中：" + result.getReasoning());
+            }
+            if (StringUtils.isNotBlank(content)) {
+                result.getContent().append(content);
+                System.out.println("回答：" + result.getContent());
+            }
+            if (null != usage) {
+                result.setUsage(usage);
+            }
+        });
+        return result;
+    }
+
     public static void main(String[] args) {
         ChatRequest request = AlibabaChatRequest.llama()
                 .user(Prompt.CRISPE)
@@ -99,26 +122,24 @@ public class ChatService {
         System.out.println(request.toString());
 
         ChatService service = new ChatService();
-        StringBuilder reasoningBuilder = new StringBuilder();
-        StringBuilder contentBuilder = new StringBuilder();
-        AtomicReference<ChatResponse.Usage> usage = new AtomicReference<>();
-        service.chat(request, (reasoning, content, usage1) -> {
+        ChatResult result = new ChatResult();
+        service.chat(request, (reasoning, content, usage) -> {
             if (StringUtils.isNotBlank(reasoning)) {
-                reasoningBuilder.append(reasoning);
-                System.out.println("思考中：" + reasoningBuilder);
+                result.getReasoning().append(reasoning);
+                System.out.println("思考中：" + result.getReasoning());
             }
             if (StringUtils.isNotBlank(content)) {
-                contentBuilder.append(content);
-                System.out.println("回答：" + contentBuilder);
+                result.getContent().append(content);
+                System.out.println("回答：" + result.getContent());
             }
-            if (null != usage1) {
-                usage.set(usage1);
+            if (null != usage) {
+                result.setUsage(usage);
             }
         });
         System.out.println("\n\n响应: ");
-        System.out.println("思考：" + reasoningBuilder);
-        System.out.println("回答：" + contentBuilder);
-        System.out.println("使用：" + usage.get());
+        System.out.println("思考：" + result.getReasoning());
+        System.out.println("回答：" + result.getContent());
+        System.out.println("使用：" + result.getUsage());
     }
 
 }

@@ -1,4 +1,4 @@
-package ai.nvwa.agent.tool.datastore.milvus.mode;
+package ai.nvwa.agent.model.embedding.mode;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
