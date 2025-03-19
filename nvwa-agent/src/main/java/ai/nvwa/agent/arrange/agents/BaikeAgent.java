@@ -4,10 +4,8 @@ import ai.nvwa.agent.arrange.AbstractAgent;
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
 import ai.nvwa.agent.prompt.ExtensionPrompt;
-import ai.nvwa.agent.tool.datastore.Document;
 import ai.nvwa.agent.tool.function.Function;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -23,9 +21,6 @@ import java.util.Map;
 @Component
 @Slf4j
 public class BaikeAgent extends AbstractAgent {
-
-    @Autowired
-    private Document document;
 
     @Override
     public String action() {
@@ -63,20 +58,6 @@ public class BaikeAgent extends AbstractAgent {
     @Override
     public String prompt() {
         return ExtensionPrompt.ACTION_ONLY;
-    }
-
-    @Override
-    public String datastore(String question) {
-        // 问题查询知识库
-        List<Document.Entity> entityList = document.queryByContent(question, 1);
-        // 曾国藩是清朝著名的军事家、政治家和文学家，字伯涵，号涤生，谥文正。他因创立湘军、平定太平天国、参与洋务运动等成就而广为人知。他的著作包括《曾文正公全集》、《治学论道之经》、《持家教子之术》和《曾国藩家书》。
-        StringBuilder datastore = new StringBuilder();
-        datastore.append("```\n");
-        for (Document.Entity entity : entityList) {
-            datastore.append("- ").append(entity.getContent()).append("\n");
-        }
-        datastore.append("```\n");
-        return datastore.toString();
     }
 
     @Override

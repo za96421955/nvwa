@@ -36,6 +36,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 文档
@@ -94,6 +95,7 @@ public class Document {
                 .collectionName(COLLECTION_NAME)
                 .filter("TEXT_MATCH(title, '" + title + "') ")
                 .outputFields(List.of("title", "content"))
+//                .searchParams(Collections.singletonMap("drop_ratio_search", 0.67))
                 .build());
         if (CollectionUtils.isEmpty(resultList)) {
             return Collections.emptyList();
@@ -114,18 +116,18 @@ public class Document {
      *
      * @author 陈晨
      */
-    public List<Entity> queryByContent(String content, int topK) {
+    public List<Entity> queryByContent(String content, float minScore) {
         EmbeddingContent titleEmbedding = embeddingService.getEmbeddingContent(content, 1024);
         List<BaseVector> queryDenseVectors = Collections.singletonList(new FloatVec(titleEmbedding.getDenseVectors()));
-        return this.buildEntity(milvusTemplate.search().search(SearchReq.builder()
+        List<Entity> entityList = this.buildEntity(milvusTemplate.search().search(SearchReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .data(queryDenseVectors)
                 .annsField("content_dense")
                 .metricType(IndexParam.MetricType.COSINE)
                 .outputFields(List.of("title", "content"))
-                .topK(topK)
-                .searchParams(Collections.singletonMap("drop_ratio_search", 0.33))
+                .topK(10)
                 .build()));
+        return entityList.stream().filter(entity -> entity.getScore() > minScore).collect(Collectors.toList());
     }
 
     /**
@@ -143,7 +145,20 @@ public class Document {
                     .vectorFieldName("content_dense")
                     .vectors(queryDenseVectors)
                     .metricType(IndexParam.MetricType.COSINE)
-                    .params("{\"nprobe\": 10}")     // 默认：8，<100万向量：16
+                    /**
+                        要搜索的群集数量
+                        搜索候选集群的集群数。数值越大，搜索的集群数越多，通过扩大搜索范围提高召回率，但代价是查询延迟增加。
+
+                        值范围:
+                        类型：整数
+                        范围： [1, nlist[1，nlist］
+                        默认值：8
+
+                        调整建议:
+                        增加该值可提高召回率，但可能会减慢搜索速度。设置nprobe 与nlist 成比例，以平衡速度和准确性。
+                        在大多数情况下，我们建议您在此范围内设置一个值：[1，nlist]。
+                     */
+                    .params("{\"nprobe\": 8}")     // 默认：8，<100万向量：16
                     .topK(3)
                     .build());
         }
@@ -286,6 +301,15 @@ public class Document {
                     .indexName("title_sparse_index")
                     .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
                     .metricType(IndexParam.MetricType.BM25)
+                    /**
+                        params.inverted_index_algo:用于建立和查询索引的算法。有效值：
+
+                        "DAAT_MAXSCORE" (默认）：使用 MaxScore 算法进行优化的 Document-at-a-Time (DAAT) 查询处理。MaxScore 通过跳过可能影响最小的术语和文档，为高 k 值或包含大量术语的查询提供更好的性能。为此，它根据最大影响分值将术语划分为基本组和非基本组，并将重点放在对前 k 结果有贡献的术语上。
+
+                        "DAAT_WAND":使用 WAND 算法优化 DAAT 查询处理。WAND 算法利用最大影响分数跳过非竞争性文档，从而评估较少的命中文档，但每次命中的开销较高。这使得 WAND 对于 k 值较小的查询或较短的查询更有效，因为在这些情况下跳过更可行。
+
+                        "TAAT_NAIVE":基本术语一次查询处理（TAAT）。虽然与DAAT_MAXSCORE 和DAAT_WAND 相比速度较慢，但TAAT_NAIVE 具有独特的优势。DAAT 算法使用的是缓存的最大影响分数，无论全局 Collections 参数（avgdl）如何变化，这些分数都保持静态，而TAAT_NAIVE 不同，它能动态地适应这种变化。
+                     */
                     .extraParams(Collections.singletonMap("inverted_index_algo", "DAAT_MAXSCORE"))
                     .build());
             // content index
@@ -294,6 +318,18 @@ public class Document {
                     .indexName("content_dense_index")
                     .indexType(IndexParam.IndexType.IVF_FLAT)
                     .metricType(IndexParam.MetricType.COSINE)
+                    /**
+                         划分数据集的簇数
+                         在索引构建过程中使用 K-means 算法创建的簇数。每个簇由一个中心点表示，存储一个向量列表。增加该参数可减少每个簇中的向量数量，从而创建更小、更集中的分区。
+
+                         值范围:
+                         类型： 整数整数
+                         范围： [1, 65536[1, 65536]
+                         默认值：128
+
+                         调整建议:
+                         nlist 值越大，创建的聚类越精细，召回率越高，但会增加索引构建时间。根据数据集大小和可用资源进行优化。在大多数情况下，我们建议在此范围内设置值：[32, 4096].
+                     */
                     .extraParams(Collections.singletonMap("nlist", 128))
                     .build());
             return indexParams;

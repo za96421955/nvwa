@@ -169,7 +169,9 @@ public class Extractor {
      * @author 陈晨
      */
     public String getAbstract(String content, int chunkSize, int overlap, int topK) {
-        List<Chunk> chunks = this.splitChunks(content.replaceAll("\\s+", " "), chunkSize, overlap);
+        List<Chunk> chunks = this.splitChunks(content
+                .replaceAll("\\s+", " ")
+                .replaceAll(" ", " "), chunkSize, overlap);
         Map<String, Double> tfidf = this.calculateTFIDF(chunks);
         StringBuilder abs = new StringBuilder();
         for (Chunk chunk : chunks) {
@@ -253,7 +255,7 @@ public class Extractor {
     }
 
     public static void main(String[] args) {
-        String filePath = "/Users/chenchen/Downloads/HIoT演进升级概要设计说明书_初稿.docx";
+        String filePath = "/Users/chenchen/Downloads/test.docx";
         String baikeUrl = "https://baike.baidu.com/item/%s?fromModule=lemma_search-box";
         String url = String.format(baikeUrl, "%E6%B0%91%E6%B3%95%E5%85%B8%E5%A9%9A%E5%A7%BB%E5%AE%B6%E5%BA%AD%E7%BC%96%EF%BC%88%E8%8D%89%E6%A1%88%EF%BC%89");
 

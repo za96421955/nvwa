@@ -5,8 +5,6 @@ package ai.nvwa.agent.prompt;
  * <p> <功能详细描述> </p>
  *
  * @author 陈晨
- * @version 1.0
- * @date 2025/3/16
  */
 public interface ReAct {
 

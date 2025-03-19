@@ -48,7 +48,7 @@ public class TestController {
 
     @PostMapping("/queryByContent")
     public Object queryByContent(String content) {
-        return document.queryByContent(content, 5);
+        return document.queryByContent(content, 0.33f);
     }
 
     @PostMapping("/queryByContents")

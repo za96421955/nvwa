@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
  * <p> <功能详细描述> </p>
  *
  * @author 陈晨
- * @version 1.0
- * @date 2025/3/12
  */
 @Component
 public class MilvusTemplate {

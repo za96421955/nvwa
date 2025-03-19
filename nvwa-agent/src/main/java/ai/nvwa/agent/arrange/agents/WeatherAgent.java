@@ -51,7 +51,6 @@ public class WeatherAgent extends AbstractAgent {
     @Override
     public List<Function> association() {
         List<Function> extensions = new ArrayList<>();
-//        extensions.add(extensionMap.get("baikeExtension"));
         extensions.add(functionMap.get("addressExtension"));
 //        extensions.add(functionMap.get("districtExtension"));
         extensions.add(functionMap.get("weatherExtension"));
@@ -66,13 +65,8 @@ public class WeatherAgent extends AbstractAgent {
 
     @Override
     public String datastore(String question) {
-        // TODO 问题查询知识库
-        StringBuilder datastore = new StringBuilder();
-        datastore.append("```\n")
-                .append("- IP: 183.213.85.230，位于江苏省南京市建邺区。\n")
-                .append("- 江苏省南京市建邺区。当地天气晴朗，气温12°C，北风5-6级，湿度21%。\n")
-                .append("```\n");
-        return datastore.toString();
+        // 江苏省南京市建邺区。当地天气晴朗，气温12°C，北风5-6级，湿度21%。
+        return super.datastore(question);
     }
 
     @Override

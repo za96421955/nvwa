@@ -41,7 +41,6 @@ public interface RedisService {
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
-     * @date 2025/1/6 16:27
      */
     long fluctuate(long seconds, long fluctuateSeconds);
 
@@ -50,7 +49,6 @@ public interface RedisService {
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
-     * @date 2025/1/6 16:27
      */
     long fluctuatePercent10(long seconds);
 
@@ -59,7 +57,6 @@ public interface RedisService {
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
-     * @date 2025/1/6 16:27
      */
     long fluctuatePercent30(long seconds);
 
@@ -432,7 +429,6 @@ public interface RedisService {
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
-     * @date 2025/2/11 19:38
      */
     boolean limit(String key, int limit);
 

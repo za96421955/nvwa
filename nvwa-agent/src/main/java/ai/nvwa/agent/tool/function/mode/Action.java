@@ -13,8 +13,6 @@ import java.io.Serializable;
  * <p> <功能详细描述> </p>
  *
  * @author 陈晨
- * @version 1.0
- * @date 2025/3/17
  */
 @Data
 @Builder

@@ -7,6 +7,7 @@ import ai.nvwa.agent.model.chat.mode.AlibabaChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
 import ai.nvwa.agent.prompt.ExtensionPrompt;
+import ai.nvwa.agent.tool.datastore.Document;
 import ai.nvwa.agent.tool.extension.Extension;
 import ai.nvwa.agent.tool.function.Function;
 import ai.nvwa.agent.tool.function.mode.Action;
@@ -39,10 +40,19 @@ public abstract class AbstractAgent implements Agent {
     protected ModelAssembler modelAssembler;
     @Autowired
     protected ChatService chatService;
+    @Autowired
+    protected Document document;
 
     @Override
     public String datastore(String question) {
-        return "";
+        List<Document.Entity> entityList = document.queryByContent(question, 0.66f);
+        StringBuilder datastore = new StringBuilder();
+        datastore.append("```\n");
+        for (Document.Entity entity : entityList) {
+            datastore.append("- ").append(entity.getContent()).append("\n");
+        }
+        datastore.append("```\n");
+        return datastore.toString();
     }
 
     @Override
