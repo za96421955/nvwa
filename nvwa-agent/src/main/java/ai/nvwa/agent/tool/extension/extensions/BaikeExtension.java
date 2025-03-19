@@ -44,7 +44,26 @@ public class BaikeExtension implements Extension {
     public String call(JSONObject input) {
         String url = "https://baike.baidu.com/item/{wd}?fromModule=lemma_search-box"
                 .replaceFirst("\\{wd\\}", (String) input.get("wd"));
-        return extractor.urlExtractor(url);
+        return extractor.getAbstract(extractor.urlExtractor(url), 1024,0,1);
+    }
+
+    public static void main(String[] args) {
+        JSONObject input = new JSONObject();
+        input.put("wd", "曾国藩");
+        String url = "https://baike.baidu.com/item/{wd}?fromModule=lemma_search-box"
+                .replaceFirst("\\{wd\\}", (String) input.get("wd"));
+
+        Extractor extractor = new Extractor();
+        String content = extractor.urlExtractor(url);
+        String abs = extractor.getAbstract(content, 1024,128,5);
+        System.out.println(abs.length());
+        abs = extractor.getAbstract(content, 1024,64,3);
+        System.out.println(abs.length());
+        abs = extractor.getAbstract(content, 1024,0,3);
+        System.out.println(abs.length());
+        abs = extractor.getAbstract(content, 1024,0,1);
+        System.out.println(abs.length());
+        System.out.println(abs);
     }
 
 }

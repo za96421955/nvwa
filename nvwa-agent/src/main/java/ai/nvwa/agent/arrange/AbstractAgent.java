@@ -1,12 +1,12 @@
 package ai.nvwa.agent.arrange;
 
 import ai.nvwa.agent.components.util.DateUtil;
+import ai.nvwa.agent.model.ModelAssembler;
 import ai.nvwa.agent.model.chat.ChatService;
 import ai.nvwa.agent.model.chat.mode.AlibabaChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
-import ai.nvwa.agent.model.chat.mode.ChatResponse;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
-import ai.nvwa.agent.prompt.FunctionPrompt;
+import ai.nvwa.agent.prompt.ExtensionPrompt;
 import ai.nvwa.agent.tool.extension.Extension;
 import ai.nvwa.agent.tool.function.Function;
 import ai.nvwa.agent.tool.function.mode.Action;
@@ -34,100 +34,141 @@ public abstract class AbstractAgent implements Agent {
 
     @Autowired
     protected Map<String, Function> functionMap;
+
+    @Autowired
+    protected ModelAssembler modelAssembler;
     @Autowired
     protected ChatService chatService;
 
+    @Override
+    public String datastore(String question) {
+        return "";
+    }
+
+    @Override
+    public String action(String ip, String question, Process process) {
+        // 构建对话请求
+        ChatRequest request = this.buildRequest(ip, question);
+        // 开启多轮对话
+        int loop = 1;
+        Map<Integer, ChatResult> chatResultMap = new HashMap<>();
+        String answer;
+        do {
+            // 对话前
+            this.assistantBefore(loop, request);
+            if (null != process) {
+                process.assistantBefore(loop, request);
+            }
+            // 对话开始
+            chatResultMap.put(loop, new ChatResult());
+            ChatResult result = chatResultMap.get(loop);
+            result.setRequest(modelAssembler.copy(request));
+            int finalLoop = loop;
+            chatService.chat(request, (reasoning, content, usage) -> {
+                if (StringUtils.isNotBlank(reasoning)) {
+                    result.getReasoning().append(reasoning);
+                    if (null != process) {
+                        process.reasoning(finalLoop, result.getReasoning().toString());
+                    }
+                }
+                if (StringUtils.isNotBlank(content)) {
+                    result.getContent().append(content);
+                    if (null != process) {
+                        process.content(finalLoop, result.getContent().toString());
+                    }
+                }
+                if (null != usage) {
+                    result.setUsage(usage);
+                }
+            });
+            // 对话处理
+            answer = this.assistantHandle(loop++, request, result);
+            // 对话后
+            this.assistantAfter(loop, result);
+            if (null != process) {
+                process.assistantAfter(loop, result);
+            }
+        } while (StringUtils.isBlank(answer));
+
+        // 执行结束/终止通知
+        this.termination(chatResultMap);
+//        if (null != process) {
+//            process.termination(chatResultMap);
+//        }
+        // 返回答案
+        return answer;
+    }
+
     /**
-     * @description 获取提示词
+     * @description 构建对话请求
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
      */
-    public String prompt() {
+    protected ChatRequest buildRequest(String ip, String question) {
+        return AlibabaChatRequest.llama()
+                .user(this.formatPrompt().replaceFirst(ExtensionPrompt.DATASTORE_INFO, this.datastore(question)))
+                .user("现在是: " + DateUtil.formatDateTime(DateUtil.now()))
+                .user("我的IP是: " + ip)
+                .user(question)
+                .stream();
+    }
+
+    /**
+     * @description 格式化提示词
+     * <p> <功能详细描述> </p>
+     *
+     * @author 陈晨
+     */
+    protected String formatPrompt() {
         StringBuilder descs = new StringBuilder();
         StringBuilder names = new StringBuilder("{");
         for (Function function : this.association()) {
-            descs.append("```\n")
+            descs.append("\n```\n")
                     .append("Action: ").append(function.action()).append("\n")
                     .append("Action Input: ").append(function.inputFormat().toJSONString()).append("\n")
                     .append(function.desc()).append("\n")
                     .append("```\n");
             names.append(function.action()).append(",");
         }
-        return FunctionPrompt.DEFAULT
-                .replaceFirst(FunctionPrompt.TOOL_DESC, descs.toString())
-                .replaceFirst(FunctionPrompt.TOOL_NAMES, names.toString());
+        names.append("}");
+        return this.prompt()
+                .replaceFirst(ExtensionPrompt.TOOL_DESC, descs.toString())
+                .replaceFirst(ExtensionPrompt.TOOL_NAMES, names.toString());
     }
 
     /**
-     * @description 执行任务
+     * @description 处理LLM回答
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
      */
-    public String action(String ip, String question) {
-        ChatRequest request = AlibabaChatRequest.llama()
-                .user(this.prompt())
-                .user("现在是: " + DateUtil.formatDateTime(DateUtil.now()))
-                .user("我的IP是: " + ip)
-                .user(question)
-                .stream();
-        // 开启多轮对话
-        int loop = 1;
-        Map<Integer, ChatResult> chatResultMap = new HashMap<>();
-        String answer;
-        while (true) {
-            chatResultMap.put(loop, new ChatResult());
-            ChatResult result = chatResultMap.get(loop);
-            result.setRequest(request.toString());
-            int finalLoop = loop;
-            chatService.chat(request, (reasoning, content, usage) -> {
-                if (StringUtils.isNotBlank(reasoning)) {
-                    result.getReasoning().append(reasoning);
-                }
-                if (StringUtils.isNotBlank(content)) {
-                    result.getContent().append(content);
-                }
-                if (null != usage) {
-                    result.setUsage(usage);
-                }
-                // 执行过程通知
-                this.process(finalLoop, reasoning, content, usage);
-            });
-            // 本轮对话处理
-            loop++;
-            String content = result.getContent().toString();
-            // 终止对话
-            if (loop > this.chatMax()) {
-                if (this.isAnswer(content)) {
-                    answer = this.getAnswer(content);
-                } else {
-                    answer = content;
-                }
-                result.setErrorMsg("超出最大对话轮次, 对话终止");
-                log.error("[执行任务] loop={}, max={}, 超出最大对话轮次, 对话终止", loop, this.chatMax());
-                break;
-            }
-            // 行动
-            if (this.isPause(content)) {
-                Action action = this.doAction(request, result, content);
-                if (null == action) {
-                    continue;
-                }
-                // 函数: 返回输入参数
-                answer = action.getInput().toJSONString();
-                break;
-            }
-            // 回答
+    private String assistantHandle(int loop, ChatRequest request, ChatResult result) {
+        String content = result.getContent().toString();
+        // 终止对话
+        if (loop >= this.chatMax()) {
+            log.error("[执行任务] loop={}, max={}, 超出最大对话轮次, 对话终止", loop, this.chatMax());
+            result.setErrorMsg("超出最大对话轮次, 对话终止");
             if (this.isAnswer(content)) {
-                answer = this.getAnswer(content);
-                break;
+                return this.getAnswer(content);
             }
+            return StringUtils.isBlank(content) ? "null" : content;
         }
-        // 执行结束/终止通知
-        this.termination(chatResultMap);
-        // 返回答案
-        return answer;
+        // 行动
+        if (this.isPause(content)) {
+            Action action = this.doAction(request, result, content);
+            if (null == action) {
+                return null;
+            }
+            // 函数: 返回输入参数
+            return action.getInput().toJSONString();
+        }
+        // 回答
+        if (this.isAnswer(content)) {
+            return this.getAnswer(content);
+        }
+        return StringUtils.isBlank(content) ? "null" : content;
+//        return null;
     }
 
     /**
@@ -174,23 +215,21 @@ public abstract class AbstractAgent implements Agent {
      * @author 陈晨
      */
     private Action doAction(ChatRequest request, ChatResult result, String content) {
-        Action action = null;
         try {
-            action = Action.builder()
+            result.setAction(Action.builder()
                     .action(this.getAction(content))
                     .input(this.getActionInput(content))
-                    .build();
-            Function function = functionMap.get(action.getAction());
+                    .build());
+            Function function = functionMap.get(result.getAction().getAction());
             if (function instanceof Extension) {
-                String actionResult = ((Extension) function).call(action.getInput());
-//                request.assistant(content).user("Action[" + action + "] Response: " + actionResult);
-                request.user("Action[" + action.getAction() + "] Response: " + actionResult);
+                result.getAction().setResponse(((Extension) function).call(result.getAction().getInput()));
+                request.assistant(content).user(result.getAction().getAction() + " Response: " + result.getAction().getResponse());
                 return null;
             }
-            return action;
+            return result.getAction();
         } catch (Exception e) {
             log.error("[执行任务] action={}, Action执行异常, 当轮对话重试: {}",
-                    action, e.getMessage(), e);
+                    result.getAction(), e.getMessage(), e);
             result.setErrorMsg(e.getMessage());
         }
         return null;
@@ -250,12 +289,24 @@ public abstract class AbstractAgent implements Agent {
     }
 
     /**
-     * @description 执行过程
+     * @description 对话前
      * <p> <功能详细描述> </p>
      *
      * @author 陈晨
      */
-    protected abstract void process(int loop, String reasoning, String content, ChatResponse.Usage usage);
+    protected void assistantBefore(int loop, ChatRequest request) {
+        // Agent内部处理
+    }
+
+    /**
+     * @description 对话后
+     * <p> <功能详细描述> </p>
+     *
+     * @author 陈晨
+     */
+    protected void assistantAfter(int loop, ChatResult result) {
+        // Agent内部处理
+    }
 
     /**
      * @description 执行结束/终止
@@ -263,7 +314,9 @@ public abstract class AbstractAgent implements Agent {
      *
      * @author 陈晨
      */
-    protected abstract void termination(Map<Integer, ChatResult> chatResultMap);
+    protected void termination(Map<Integer, ChatResult> chatResultMap) {
+        // Agent内部处理
+    }
 
 }
 

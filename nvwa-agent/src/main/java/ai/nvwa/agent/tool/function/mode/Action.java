@@ -23,15 +23,12 @@ import java.io.Serializable;
 public class Action implements Serializable {
     private static final long serialVersionUID = -993585501587766955L;
 
-    /**
-     * 名称
-     */
+    /** 名称 */
     private String action;
-
-    /**
-     * 输入
-     */
+    /** 输入 */
     private JSONObject input;
+    /** 响应 */
+    private String response;
 
 }
 

@@ -5,6 +5,11 @@ import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.model.embedding.onnx.HuggingFaceTokenizer;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -17,10 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,7 +35,6 @@ import java.util.stream.Collectors;
 public class Extractor {
     private static final int DEFAULT_CHUNK_SIZE = 512;
     private static final int DEFAULT_OVER_LAP = 128;
-    private static final String BAIKE_URL = "https://baike.baidu.com/item/%s?fromModule=lemma_search-box";
 
     /**
      * @description 文件类型检测
@@ -161,9 +162,100 @@ public class Extractor {
         return this.splitChunks(content, DEFAULT_CHUNK_SIZE, DEFAULT_OVER_LAP);
     }
 
+    /**
+     * @description 获取摘要
+     * <p> <功能详细描述> </p>
+     *
+     * @author 陈晨
+     */
+    public String getAbstract(String content, int chunkSize, int overlap, int topK) {
+        List<Chunk> chunks = this.splitChunks(content.replaceAll("\\s+", " "), chunkSize, overlap);
+        Map<String, Double> tfidf = this.calculateTFIDF(chunks);
+        StringBuilder abs = new StringBuilder();
+        for (Chunk chunk : chunks) {
+            for (String sentence : this.scoreSentences(chunk, tfidf, topK)) {
+                abs.append(sentence).append("\n");
+            }
+        }
+        return abs.toString();
+    }
+
+    /**
+     * @description 统计每个分块中的高频词汇，作为摘要的核心内容标识
+     * <p>
+     *      算法原理：
+     *      TF：词频（Term Frequency）= 该词在分块中出现的次数 / 分块总词数
+     *      IDF：逆网页频率（Inverse Document Frequency）= log(总分块数 / 含该词的块数)
+     * </p>
+     *
+     * @author 陈晨
+     */
+    public Map<String, Double> calculateTFIDF(List<Chunk> chunks) {
+        Map<String, Integer> wordCount = new HashMap<>();
+        Map<String, Integer> docCount = new HashMap<>();
+        // 分词
+        for (Chunk chunk : chunks) {
+            String[] words = chunk.getText().split("\\s+");
+            for (String word : words) {
+                if (StringUtils.isBlank(word)) {
+                    continue;
+                }
+                wordCount.put(word, wordCount.getOrDefault(word, 0) + 1);
+            }
+        }
+        for (String word : wordCount.keySet()) {
+            docCount.put(word, Collections.frequency(wordCount.keySet(), word));
+        }
+        // 词频统计
+        Map<String, Double> tfidf = new HashMap<>();
+        for (String word : wordCount.keySet()) {
+            double tf = (double) wordCount.get(word) / chunks.size();
+            double idf = Math.log((double) chunks.size() / (1 + docCount.get(word)));
+            tfidf.put(word, tf * idf);
+        }
+        return tfidf;
+    }
+
+    /**
+     * @description 根据关键词权重和句子位置综合评分，选取高评分句子组成摘要
+     * <p> <功能详细描述> </p>
+     *
+     * @author 陈晨
+     */
+    private List<String> scoreSentences(Chunk chunk, Map<String, Double> tfidf, int topK) {
+        List<String> sentences = Arrays.asList(chunk.getText().split("[。！？]"));
+        List<ScoredSentence> scored = new ArrayList<>();
+        for (String sentence : sentences) {
+            double score = 0;
+            String[] words = sentence.split("\\s+");
+            for (String word : words) {
+                score += tfidf.getOrDefault(word, 0.0);
+            }
+            // 加权位置得分（前1/3句子权重更高）
+            int position = sentences.indexOf(sentence);
+            score += 1.5 * (position < sentences.size() / 3 ? 1 : 0.5);
+            scored.add(new ScoredSentence(sentence, score));
+        }
+        // score排序
+        scored.sort((a, b) -> Double.compare(b.score, a.score));
+        return scored.subList(0, Math.min(topK, scored.size())).stream()
+                .map(ScoredSentence::getText)
+                .collect(Collectors.toList());
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class ScoredSentence {
+        private String text;
+        private double score;
+    }
+
     public static void main(String[] args) {
         String filePath = "/Users/chenchen/Downloads/HIoT演进升级概要设计说明书_初稿.docx";
-        String url = String.format(BAIKE_URL, "%E6%B0%91%E6%B3%95%E5%85%B8%E5%A9%9A%E5%A7%BB%E5%AE%B6%E5%BA%AD%E7%BC%96%EF%BC%88%E8%8D%89%E6%A1%88%EF%BC%89");
+        String baikeUrl = "https://baike.baidu.com/item/%s?fromModule=lemma_search-box";
+        String url = String.format(baikeUrl, "%E6%B0%91%E6%B3%95%E5%85%B8%E5%A9%9A%E5%A7%BB%E5%AE%B6%E5%BA%AD%E7%BC%96%EF%BC%88%E8%8D%89%E6%A1%88%EF%BC%89");
 
         Extractor tika = new Extractor();
 //        Map<String, String> metas = tika.metadataExtractor(filePath);

@@ -1,0 +1,1509 @@
+
+>>> 第[1]轮
+
+请求：
+模型：deepseek-r1-distill-llama-70b
+【user】：## Profile
+- Author: cc
+- Version: 1.0
+- Language: 中文
+- Description: You are designed to help with a variety of tasks, from answering questions to providing summaries to other types of analyses.
+
+## Datastore
+The following is completely reliable information that you can refer to to to help you answer questions.
+
+
+## Tools
+You have access to a wide variety of tools. You are responsible for using the tools in any sequence you deem appropriate to complete the task at hand.
+This may require breaking the task into subtasks and using different tools to complete each subtask.
+
+You have access to the following tools:
+
+```
+Action: baikeExtension
+Action Input: {"wd":"XXXXXX"}
+中国最大在线百科平台，百度2006年创建，专业审核与用户共创确保权威性，涵盖多领域知识，支持多媒体及20余种语言，日均访问量超亿次。
+```
+
+
+## Constrains
+- Don't break character under any circumstance.
+- Don't talk nonsense and make up facts.
+- Do not make any assumptions about the results when answering questions.
+- 在你确定自己需要使用任何工具并输出了"PAUSE"标记时立即停止回答.
+
+## Output Format
+Please answer in the same language as the question and use the following format:
+```
+Thought: The current language of the user is: (user\'s language). I need to use a tool to help me answer the question.
+Action: tool name (one of {baikeExtension,}) if using a tool.
+Action Input: the input to the tool, in a JSON format representing the kwargs (e.g. {{"input": "hello world", "num_beams": 5}})
+```
+
+Please ALWAYS start with a Thought.
+NEVER surround your response with markdown code markers. You may use code markers within your response if you need to.
+Please use a valid JSON format for the Action Input. Do NOT do this {{\'input\': \'hello world\', \'num_beams\': 5}}.
+
+### Example
+```
+Question: What is the capital of France?
+Thought: I should look up France on Wikipedia
+Action: wikipedia
+Action Input:
+{
+  "q": "France"
+}
+PAUSE
+```
+
+You will be called again with this:
+``
+wikipedia Response: France is a country. The capital is Paris.
+```
+
+如果你已确信自己有足够的信息来回答问题，而无需使用任何其他工具时，您必须以以下两种格式之一进行响应：
+```
+Thought: I can answer without using any more tools. I\\'ll use the user\\'s language to answer
+Answer: [your answer here (In the same language as the user\\'s question)]
+```
+
+```
+Thought: I cannot answer the question with the provided tools.
+Answer: [your answer here (In the same language as the user\\'s question)]
+```
+
+## Current Conversation
+Below is the current conversation consisting of interleaving human and assistant messages.
+【user】：现在是: 2025-03-18 20:08:33
+【user】：我的IP是: 183.213.85.230
+【user】：曾国藩是谁？为什么经常能听到有人提起他？他有哪些著作？
+
+思考：
+
+哦，用户问的是曾国藩是谁，并且提到经常听到有人提起他，还问他的著作是什么。我需要先确定用户的语言是中文，所以我的回答应该用中文。
+
+首先，曾国藩是一个非常重要的人物，他是清朝的名将和政尚，对中国近代历史影响深远。解释他的重要性时，应该涵盖他的主要成就，比如领导湘军、协助平定太平天国等。
+
+接下来，用户提到经常听到他的名字，这可能是因为他的思想和军事策略对后世有很大的影响，尤其是在现代社会和管理学中，还被广泛引用。所以我需要提到这些方面，以及他在文学和历史研究中的地位。
+
+关于著作，曾国藩有很多重要的小说和随笔，比如《69515怎样才能打好基础学科？》似乎不太相关，可能笔误。正确的著作包括《鸿篇锦绣》、《曾国藩家书》和《岭南人omenclature错乱的问题所在》中的部分可能不正确，可能应该说《资政新篇》或其他真实的著作。得核对正确的书名，确保信息准确。
+
+在使用工具时，我应该调用baikeExtension工具，搜索“曾国藩”来获取详细的信息，包括他的生平、贡献和著作。这样可以确保提供的信息准确可靠。
+
+最后，总结曾国藩的影响，强调他的多栖才华和持久的影响力，让用户明白为什么他经常被提及。
+
+
+回答：
+Thought: 我需要了解曾国藩的生平和著作，以回答用户的问题。
+Action: baikeExtension
+Action Input:
+{
+  "wd": "曾国藩"
+}
+PAUSE
+
+Token：
+ChatResponse.Usage(promptTokens=692, completionTokens=416, totalTokens=1108)
+
+工具：
+Action(action=baikeExtension, input={"wd":"曾国藩"}, response=
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	全    名
+	曾国藩
+
+
+	别    名
+	曾子城、曾文正、曾湘乡 [78-79]
+
+
+	字
+	伯涵
+
+
+	号
+	涤生
+
+
+	谥    号
+	文正
+
+
+	封    号
+	一等毅勇侯
+
+
+	所处时代
+	晚清
+
+
+	民族族群
+	汉族
+
+
+	出生地
+	湖南长沙府湘乡县
+
+
+	出生日期
+	1811年11月26日（嘉庆十六年十月十一日）
+
+
+	逝世日期
+	1872年3月12日（同治十一年二月初四）
+
+
+
+	逝世地
+	南京
+
+
+	安葬地
+	湖南省长沙市岳麓区坪塘街道伏龙山
+
+
+	主要成就
+	创立湘军
+平定太平天国
+围剿捻军
+洋务运动的发起者之一
+晚清四大名臣之首展开	主要成就
+	创立湘军
+平定太平天国
+围剿捻军
+洋务运动的发起者之一
+晚清四大名臣之首
+晚清散文“湘乡派”创立人
+
+收起
+
+
+
+
+	主要作品
+	曾文正公全集、治学论道之经、持家教子之术、曾国藩家书
+
+
+	最高官职
+	两江总督、直隶总督、太傅、武英殿大学士
+
+
+	本    名
+	曾子城
+
+
+	性    别
+	男
+
+
+
+目录
+	1人物生平
+	▪早年经历
+	▪仕途坦荡
+	▪组建湘军
+	▪鏖战湖赣
+	▪攻占江宁
+	▪追剿捻军
+	▪主办洋务
+	▪直隶政事
+	▪回任两江
+
+	2主要影响
+	▪政治
+	▪军事
+	▪经济
+	▪外交
+	▪理学
+	▪文学
+	▪书法
+	▪教育
+	3历史评价
+
+	4轶事典故
+	▪巨蟒转世
+	▪比贼笨
+	▪处世交友
+	▪改名国藩
+	▪治家方略
+	▪曾剃头
+	▪人格修炼
+	▪修身之法
+	▪审鸡蛋案
+
+	▪千年死一个
+	▪恩师唐鉴
+	5人际关系
+	6后世纪念
+	▪故居
+	▪墓址
+	7影视形象
+
+
+
+
+
+人物生平
+
+播报编辑
+
+
+早年经历
+
+
+曾国藩居住过的 欧阳故宅(15张)
+
+
+
+
+
+嘉庆十六年十月十一日（1811年11月26日），曾国藩出生于湖南长沙府湘乡荷叶塘白杨坪（今湖南省娄底市双峰县荷叶镇天坪村）的一个普通耕读家庭
+ [20]
+
+主要影响
+
+播报编辑
+
+
+政治
+
+	整顿吏治
+
+
+面对康乾盛世后清朝的腐败衰落，曾国藩认为：“国贫不足患，惟民心涣散，则为患甚大
+
+	治军思想
+
+
+曾国藩提倡忠君卫道、以儒家学说治军的这一宗旨还贯彻在选将、募兵、军队管理以及协调军内外关系等方面
+ [46]
+	尊礼思想
+
+
+曾国藩说：“古之君子之所以尽其心，养其性者，不可得而见
+ [45]
+
+历史评价
+
+播报编辑
+
+胡林翼：曾公素有知人之鉴，所识拔多贤将
+ [74]
+
+人际关系
+
+播报编辑
+
+	关系
+	姓名
+	简介
+
+	长辈
+	太高祖
+	曾贞桢（元吉公）
+	-
+
+	高祖父
+	曾尚庭（辅臣公）
+	-
+
+	祖父
+	曾衍胜（竞希公）
+	1743年—1816年
+
+	祖父
+	曾玉屏
+	字兴阝文（星冈公）（1774年—1849年）
+
+	外祖母
+	熊氏
+
+	父
+	曾毓济
+	字竹亭（麟书，竹亭公）（1790年—1857年）
+
+	母
+	曾江氏
+	1785年—1852年
+
+	岳父
+	欧阳凝祉
+	（1784年——1869年，初名鳌，又名沧溟，字福田）
+
+	岳母
+	邱氏
+	生长子牧云，字秉栓，次子凌云，字秉钧，长女适曾国藩，次女适彭治官
+
+	妻妾
+	元配
+	欧阳氏
+	1816—1874年，衡阳人
+
+	如夫人
+	陈氏
+	1840—1863年，江宁人
+
+	兄弟姐妹
+	兄弟
+	-
+	-
+
+	弟
+	曾国潢
+	（1820—1886，派名传晋，原名国英，字澄侯）
+
+	曾国华
+	（1822—1858，派名传谦，字温甫，出抚给叔父曾骥云为子）
+
+	曾国荃
+	（1824—1890，派名传恒，字沅甫，号叔纯）
+
+	曾国葆
+	（1828—1862，派名传履，字季洪，后更名贞斡，字事恒）
+
+	姐妹
+	-
+	-
+
+	姐
+	曾国兰
+	（1808—1863），嫁王国九（字鹏远，号万程，贺家坳人，与国兰有二子一女，长子王临三，次王昆八，女适贺孝七之子）
+
+	妹
+	曾国蕙
+	（1814—1864），嫁王待聘（又名王率五，为王国九排行兄弟）
+
+	曾国芝
+	（1817—1846），嫁朱咏春（又名丽春，号存一，梓门桥人）
+
+	满妹
+	-
+	1830—1839，痘殇
+
+	子女后代
+	子
+	曾纪第
+	又名桢第，早夭
+
+	曾纪泽
+	（1839—1890，字劼刚，号梦瞻，晚清著名政治家、外交家），妻贺氏（1840—1857，婚后一年难产死，贺长龄女）；继刘氏（1841—1903，继配，刘蓉之女
+ [20]
+
+影视形象
+
+播报编辑
+
+影视形象	类型
+	年份
+	剧名
+	饰演者
+
+	电视剧
+	1988年
+	《太平天国》
+	刘江
+
+	1990年
+	《满清十三皇朝之血染紫禁城》
+	陈东
+
+	2002年
+	《太平天国》
+	孙飞虎
+
+	2005年
+	《一生为奴》
+	迟国栋
+
+	2007年
+	《船政风云》
+	孙飞虎
+
+	2013年
+	《大国船梦》
+	杜雨露
+
+	电影
+	1987年
+	《两宫皇太后》
+	郑榕
+
+
+
+
+
+
+
+
+
+
+
+新手上路
+成长任务编辑入门编辑规则本人编辑
+
+我有疑问
+内容质疑在线客服官方贴吧意见反馈
+
+投诉建议
+举报不良信息未通过词条申诉投诉侵权信息封禁查询与解封
+
+
+©2025 Baidu 使用百度前必读 | 百科协议 | 隐私政策 | 百度百科合作平台 | 京ICP证030173号 
+京公网安备11000002000001号
+
+
+
+
+)
+
+错误信息：
+null
+
+
+>>> 第[2]轮
+
+请求：
+模型：deepseek-r1-distill-llama-70b
+【user】：## Profile
+- Author: cc
+- Version: 1.0
+- Language: 中文
+- Description: You are designed to help with a variety of tasks, from answering questions to providing summaries to other types of analyses.
+
+## Datastore
+The following is completely reliable information that you can refer to to to help you answer questions.
+
+
+## Tools
+You have access to a wide variety of tools. You are responsible for using the tools in any sequence you deem appropriate to complete the task at hand.
+This may require breaking the task into subtasks and using different tools to complete each subtask.
+
+You have access to the following tools:
+
+```
+Action: baikeExtension
+Action Input: {"wd":"XXXXXX"}
+中国最大在线百科平台，百度2006年创建，专业审核与用户共创确保权威性，涵盖多领域知识，支持多媒体及20余种语言，日均访问量超亿次。
+```
+
+
+## Constrains
+- Don't break character under any circumstance.
+- Don't talk nonsense and make up facts.
+- Do not make any assumptions about the results when answering questions.
+- 在你确定自己需要使用任何工具并输出了"PAUSE"标记时立即停止回答.
+
+## Output Format
+Please answer in the same language as the question and use the following format:
+```
+Thought: The current language of the user is: (user\'s language). I need to use a tool to help me answer the question.
+Action: tool name (one of {baikeExtension,}) if using a tool.
+Action Input: the input to the tool, in a JSON format representing the kwargs (e.g. {{"input": "hello world", "num_beams": 5}})
+```
+
+Please ALWAYS start with a Thought.
+NEVER surround your response with markdown code markers. You may use code markers within your response if you need to.
+Please use a valid JSON format for the Action Input. Do NOT do this {{\'input\': \'hello world\', \'num_beams\': 5}}.
+
+### Example
+```
+Question: What is the capital of France?
+Thought: I should look up France on Wikipedia
+Action: wikipedia
+Action Input:
+{
+  "q": "France"
+}
+PAUSE
+```
+
+You will be called again with this:
+``
+wikipedia Response: France is a country. The capital is Paris.
+```
+
+如果你已确信自己有足够的信息来回答问题，而无需使用任何其他工具时，您必须以以下两种格式之一进行响应：
+```
+Thought: I can answer without using any more tools. I\\'ll use the user\\'s language to answer
+Answer: [your answer here (In the same language as the user\\'s question)]
+```
+
+```
+Thought: I cannot answer the question with the provided tools.
+Answer: [your answer here (In the same language as the user\\'s question)]
+```
+
+## Current Conversation
+Below is the current conversation consisting of interleaving human and assistant messages.
+【user】：现在是: 2025-03-18 20:08:33
+【user】：我的IP是: 183.213.85.230
+【user】：曾国藩是谁？为什么经常能听到有人提起他？他有哪些著作？
+【assistant】：Thought: 我需要了解曾国藩的生平和著作，以回答用户的问题。
+Action: baikeExtension
+Action Input:
+{
+  "wd": "曾国藩"
+}
+PAUSE
+【user】：baikeExtension Response:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	全    名
+	曾国藩
+
+
+	别    名
+	曾子城、曾文正、曾湘乡 [78-79]
+
+
+	字
+	伯涵
+
+
+	号
+	涤生
+
+
+	谥    号
+	文正
+
+
+	封    号
+	一等毅勇侯
+
+
+	所处时代
+	晚清
+
+
+	民族族群
+	汉族
+
+
+	出生地
+	湖南长沙府湘乡县
+
+
+	出生日期
+	1811年11月26日（嘉庆十六年十月十一日）
+
+
+	逝世日期
+	1872年3月12日（同治十一年二月初四）
+
+
+
+	逝世地
+	南京
+
+
+	安葬地
+	湖南省长沙市岳麓区坪塘街道伏龙山
+
+
+	主要成就
+	创立湘军
+平定太平天国
+围剿捻军
+洋务运动的发起者之一
+晚清四大名臣之首展开	主要成就
+	创立湘军
+平定太平天国
+围剿捻军
+洋务运动的发起者之一
+晚清四大名臣之首
+晚清散文“湘乡派”创立人
+
+收起
+
+
+
+
+	主要作品
+	曾文正公全集、治学论道之经、持家教子之术、曾国藩家书
+
+
+	最高官职
+	两江总督、直隶总督、太傅、武英殿大学士
+
+
+	本    名
+	曾子城
+
+
+	性    别
+	男
+
+
+
+目录
+	1人物生平
+	▪早年经历
+	▪仕途坦荡
+	▪组建湘军
+	▪鏖战湖赣
+	▪攻占江宁
+	▪追剿捻军
+	▪主办洋务
+	▪直隶政事
+	▪回任两江
+
+	2主要影响
+	▪政治
+	▪军事
+	▪经济
+	▪外交
+	▪理学
+	▪文学
+	▪书法
+	▪教育
+	3历史评价
+
+	4轶事典故
+	▪巨蟒转世
+	▪比贼笨
+	▪处世交友
+	▪改名国藩
+	▪治家方略
+	▪曾剃头
+	▪人格修炼
+	▪修身之法
+	▪审鸡蛋案
+
+	▪千年死一个
+	▪恩师唐鉴
+	5人际关系
+	6后世纪念
+	▪故居
+	▪墓址
+	7影视形象
+
+
+
+
+
+人物生平
+
+播报编辑
+
+
+早年经历
+
+
+曾国藩居住过的 欧阳故宅(15张)
+
+
+
+
+
+嘉庆十六年十月十一日（1811年11月26日），曾国藩出生于湖南长沙府湘乡荷叶塘白杨坪（今湖南省娄底市双峰县荷叶镇天坪村）的一个普通耕读家庭
+ [20]
+
+主要影响
+
+播报编辑
+
+
+政治
+
+	整顿吏治
+
+
+面对康乾盛世后清朝的腐败衰落，曾国藩认为：“国贫不足患，惟民心涣散，则为患甚大
+
+	治军思想
+
+
+曾国藩提倡忠君卫道、以儒家学说治军的这一宗旨还贯彻在选将、募兵、军队管理以及协调军内外关系等方面
+ [46]
+	尊礼思想
+
+
+曾国藩说：“古之君子之所以尽其心，养其性者，不可得而见
+ [45]
+
+历史评价
+
+播报编辑
+
+胡林翼：曾公素有知人之鉴，所识拔多贤将
+ [74]
+
+人际关系
+
+播报编辑
+
+	关系
+	姓名
+	简介
+
+	长辈
+	太高祖
+	曾贞桢（元吉公）
+	-
+
+	高祖父
+	曾尚庭（辅臣公）
+	-
+
+	祖父
+	曾衍胜（竞希公）
+	1743年—1816年
+
+	祖父
+	曾玉屏
+	字兴阝文（星冈公）（1774年—1849年）
+
+	外祖母
+	熊氏
+
+	父
+	曾毓济
+	字竹亭（麟书，竹亭公）（1790年—1857年）
+
+	母
+	曾江氏
+	1785年—1852年
+
+	岳父
+	欧阳凝祉
+	（1784年——1869年，初名鳌，又名沧溟，字福田）
+
+	岳母
+	邱氏
+	生长子牧云，字秉栓，次子凌云，字秉钧，长女适曾国藩，次女适彭治官
+
+	妻妾
+	元配
+	欧阳氏
+	1816—1874年，衡阳人
+
+	如夫人
+	陈氏
+	1840—1863年，江宁人
+
+	兄弟姐妹
+	兄弟
+	-
+	-
+
+	弟
+	曾国潢
+	（1820—1886，派名传晋，原名国英，字澄侯）
+
+	曾国华
+	（1822—1858，派名传谦，字温甫，出抚给叔父曾骥云为子）
+
+	曾国荃
+	（1824—1890，派名传恒，字沅甫，号叔纯）
+
+	曾国葆
+	（1828—1862，派名传履，字季洪，后更名贞斡，字事恒）
+
+	姐妹
+	-
+	-
+
+	姐
+	曾国兰
+	（1808—1863），嫁王国九（字鹏远，号万程，贺家坳人，与国兰有二子一女，长子王临三，次王昆八，女适贺孝七之子）
+
+	妹
+	曾国蕙
+	（1814—1864），嫁王待聘（又名王率五，为王国九排行兄弟）
+
+	曾国芝
+	（1817—1846），嫁朱咏春（又名丽春，号存一，梓门桥人）
+
+	满妹
+	-
+	1830—1839，痘殇
+
+	子女后代
+	子
+	曾纪第
+	又名桢第，早夭
+
+	曾纪泽
+	（1839—1890，字劼刚，号梦瞻，晚清著名政治家、外交家），妻贺氏（1840—1857，婚后一年难产死，贺长龄女）；继刘氏（1841—1903，继配，刘蓉之女
+ [20]
+
+影视形象
+
+播报编辑
+
+影视形象	类型
+	年份
+	剧名
+	饰演者
+
+	电视剧
+	1988年
+	《太平天国》
+	刘江
+
+	1990年
+	《满清十三皇朝之血染紫禁城》
+	陈东
+
+	2002年
+	《太平天国》
+	孙飞虎
+
+	2005年
+	《一生为奴》
+	迟国栋
+
+	2007年
+	《船政风云》
+	孙飞虎
+
+	2013年
+	《大国船梦》
+	杜雨露
+
+	电影
+	1987年
+	《两宫皇太后》
+	郑榕
+
+
+
+
+
+
+
+
+
+
+
+新手上路
+成长任务编辑入门编辑规则本人编辑
+
+我有疑问
+内容质疑在线客服官方贴吧意见反馈
+
+投诉建议
+举报不良信息未通过词条申诉投诉侵权信息封禁查询与解封
+
+
+©2025 Baidu 使用百度前必读 | 百科协议 | 隐私政策 | 百度百科合作平台 | 京ICP证030173号 
+京公网安备11000002000001号
+
+
+
+
+
+
+思考：
+
+好的，用户想知道曾国藩是谁，以及为什么经常被提起，还有他的著作。首先，我需要查找可靠的资料来源。在工具列表中，有baikeExtension，这是一个百度百科的工具，适合获取权威的信息。
+
+然后，我需要确保自己正确地使用这个工具，输入正确的参数。我应该输入曾国藩作为wd的值，以获取相关的百科内容。接下来，用户的问题涉及三个方面：曾国藩的身份、他为什么被经常提起，以及他的著作，这些信息都可以在百科中找到。
+
+在百科查询结果中，我需要找到关于他的生平、主要成就和主要作品的信息。这样可以全面回答用户的问题。同时，要注意信息的准确性和全面性，确保覆盖用户关心的各个方面。
+
+最后，我需要将这些信息以简洁明了的方式呈现给用户，确保他们能清楚理解曾国藩的重要性和影响，以及他的著作有哪些。
+
+
+回答：
+曾国藩是清代著名的军事家、政治家和文学家。他被频繁提及主要是因为他在中国历史上有着深远的影响，尤其是在平定太平天国运动、创建湘军以及推动洋务运动方面令人难忘。他著述颇丰，代表作有《曾文正公全集》、《治学论道之经》、《持家教子之术》和《曾国藩家书》。
+
+Token：
+ChatResponse.Usage(promptTokens=2672, completionTokens=342, totalTokens=3014)
+
+工具：
+null
+
+错误信息：
+null
+
+
+>>> 第[3]轮
+
+请求：
+模型：deepseek-r1-distill-llama-70b
+【user】：## Profile
+- Author: cc
+- Version: 1.0
+- Language: 中文
+- Description: You are designed to help with a variety of tasks, from answering questions to providing summaries to other types of analyses.
+
+## Datastore
+The following is completely reliable information that you can refer to to to help you answer questions.
+
+
+## Tools
+You have access to a wide variety of tools. You are responsible for using the tools in any sequence you deem appropriate to complete the task at hand.
+This may require breaking the task into subtasks and using different tools to complete each subtask.
+
+You have access to the following tools:
+
+```
+Action: baikeExtension
+Action Input: {"wd":"XXXXXX"}
+中国最大在线百科平台，百度2006年创建，专业审核与用户共创确保权威性，涵盖多领域知识，支持多媒体及20余种语言，日均访问量超亿次。
+```
+
+
+## Constrains
+- Don't break character under any circumstance.
+- Don't talk nonsense and make up facts.
+- Do not make any assumptions about the results when answering questions.
+- 在你确定自己需要使用任何工具并输出了"PAUSE"标记时立即停止回答.
+
+## Output Format
+Please answer in the same language as the question and use the following format:
+```
+Thought: The current language of the user is: (user\'s language). I need to use a tool to help me answer the question.
+Action: tool name (one of {baikeExtension,}) if using a tool.
+Action Input: the input to the tool, in a JSON format representing the kwargs (e.g. {{"input": "hello world", "num_beams": 5}})
+```
+
+Please ALWAYS start with a Thought.
+NEVER surround your response with markdown code markers. You may use code markers within your response if you need to.
+Please use a valid JSON format for the Action Input. Do NOT do this {{\'input\': \'hello world\', \'num_beams\': 5}}.
+
+### Example
+```
+Question: What is the capital of France?
+Thought: I should look up France on Wikipedia
+Action: wikipedia
+Action Input:
+{
+  "q": "France"
+}
+PAUSE
+```
+
+You will be called again with this:
+``
+wikipedia Response: France is a country. The capital is Paris.
+```
+
+如果你已确信自己有足够的信息来回答问题，而无需使用任何其他工具时，您必须以以下两种格式之一进行响应：
+```
+Thought: I can answer without using any more tools. I\\'ll use the user\\'s language to answer
+Answer: [your answer here (In the same language as the user\\'s question)]
+```
+
+```
+Thought: I cannot answer the question with the provided tools.
+Answer: [your answer here (In the same language as the user\\'s question)]
+```
+
+## Current Conversation
+Below is the current conversation consisting of interleaving human and assistant messages.
+【user】：现在是: 2025-03-18 20:08:33
+【user】：我的IP是: 183.213.85.230
+【user】：曾国藩是谁？为什么经常能听到有人提起他？他有哪些著作？
+【assistant】：Thought: 我需要了解曾国藩的生平和著作，以回答用户的问题。
+Action: baikeExtension
+Action Input:
+{
+  "wd": "曾国藩"
+}
+PAUSE
+【user】：baikeExtension Response:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	全    名
+	曾国藩
+
+
+	别    名
+	曾子城、曾文正、曾湘乡 [78-79]
+
+
+	字
+	伯涵
+
+
+	号
+	涤生
+
+
+	谥    号
+	文正
+
+
+	封    号
+	一等毅勇侯
+
+
+	所处时代
+	晚清
+
+
+	民族族群
+	汉族
+
+
+	出生地
+	湖南长沙府湘乡县
+
+
+	出生日期
+	1811年11月26日（嘉庆十六年十月十一日）
+
+
+	逝世日期
+	1872年3月12日（同治十一年二月初四）
+
+
+
+	逝世地
+	南京
+
+
+	安葬地
+	湖南省长沙市岳麓区坪塘街道伏龙山
+
+
+	主要成就
+	创立湘军
+平定太平天国
+围剿捻军
+洋务运动的发起者之一
+晚清四大名臣之首展开	主要成就
+	创立湘军
+平定太平天国
+围剿捻军
+洋务运动的发起者之一
+晚清四大名臣之首
+晚清散文“湘乡派”创立人
+
+收起
+
+
+
+
+	主要作品
+	曾文正公全集、治学论道之经、持家教子之术、曾国藩家书
+
+
+	最高官职
+	两江总督、直隶总督、太傅、武英殿大学士
+
+
+	本    名
+	曾子城
+
+
+	性    别
+	男
+
+
+
+目录
+	1人物生平
+	▪早年经历
+	▪仕途坦荡
+	▪组建湘军
+	▪鏖战湖赣
+	▪攻占江宁
+	▪追剿捻军
+	▪主办洋务
+	▪直隶政事
+	▪回任两江
+
+	2主要影响
+	▪政治
+	▪军事
+	▪经济
+	▪外交
+	▪理学
+	▪文学
+	▪书法
+	▪教育
+	3历史评价
+
+	4轶事典故
+	▪巨蟒转世
+	▪比贼笨
+	▪处世交友
+	▪改名国藩
+	▪治家方略
+	▪曾剃头
+	▪人格修炼
+	▪修身之法
+	▪审鸡蛋案
+
+	▪千年死一个
+	▪恩师唐鉴
+	5人际关系
+	6后世纪念
+	▪故居
+	▪墓址
+	7影视形象
+
+
+
+
+
+人物生平
+
+播报编辑
+
+
+早年经历
+
+
+曾国藩居住过的 欧阳故宅(15张)
+
+
+
+
+
+嘉庆十六年十月十一日（1811年11月26日），曾国藩出生于湖南长沙府湘乡荷叶塘白杨坪（今湖南省娄底市双峰县荷叶镇天坪村）的一个普通耕读家庭
+ [20]
+
+主要影响
+
+播报编辑
+
+
+政治
+
+	整顿吏治
+
+
+面对康乾盛世后清朝的腐败衰落，曾国藩认为：“国贫不足患，惟民心涣散，则为患甚大
+
+	治军思想
+
+
+曾国藩提倡忠君卫道、以儒家学说治军的这一宗旨还贯彻在选将、募兵、军队管理以及协调军内外关系等方面
+ [46]
+	尊礼思想
+
+
+曾国藩说：“古之君子之所以尽其心，养其性者，不可得而见
+ [45]
+
+历史评价
+
+播报编辑
+
+胡林翼：曾公素有知人之鉴，所识拔多贤将
+ [74]
+
+人际关系
+
+播报编辑
+
+	关系
+	姓名
+	简介
+
+	长辈
+	太高祖
+	曾贞桢（元吉公）
+	-
+
+	高祖父
+	曾尚庭（辅臣公）
+	-
+
+	祖父
+	曾衍胜（竞希公）
+	1743年—1816年
+
+	祖父
+	曾玉屏
+	字兴阝文（星冈公）（1774年—1849年）
+
+	外祖母
+	熊氏
+
+	父
+	曾毓济
+	字竹亭（麟书，竹亭公）（1790年—1857年）
+
+	母
+	曾江氏
+	1785年—1852年
+
+	岳父
+	欧阳凝祉
+	（1784年——1869年，初名鳌，又名沧溟，字福田）
+
+	岳母
+	邱氏
+	生长子牧云，字秉栓，次子凌云，字秉钧，长女适曾国藩，次女适彭治官
+
+	妻妾
+	元配
+	欧阳氏
+	1816—1874年，衡阳人
+
+	如夫人
+	陈氏
+	1840—1863年，江宁人
+
+	兄弟姐妹
+	兄弟
+	-
+	-
+
+	弟
+	曾国潢
+	（1820—1886，派名传晋，原名国英，字澄侯）
+
+	曾国华
+	（1822—1858，派名传谦，字温甫，出抚给叔父曾骥云为子）
+
+	曾国荃
+	（1824—1890，派名传恒，字沅甫，号叔纯）
+
+	曾国葆
+	（1828—1862，派名传履，字季洪，后更名贞斡，字事恒）
+
+	姐妹
+	-
+	-
+
+	姐
+	曾国兰
+	（1808—1863），嫁王国九（字鹏远，号万程，贺家坳人，与国兰有二子一女，长子王临三，次王昆八，女适贺孝七之子）
+
+	妹
+	曾国蕙
+	（1814—1864），嫁王待聘（又名王率五，为王国九排行兄弟）
+
+	曾国芝
+	（1817—1846），嫁朱咏春（又名丽春，号存一，梓门桥人）
+
+	满妹
+	-
+	1830—1839，痘殇
+
+	子女后代
+	子
+	曾纪第
+	又名桢第，早夭
+
+	曾纪泽
+	（1839—1890，字劼刚，号梦瞻，晚清著名政治家、外交家），妻贺氏（1840—1857，婚后一年难产死，贺长龄女）；继刘氏（1841—1903，继配，刘蓉之女
+ [20]
+
+影视形象
+
+播报编辑
+
+影视形象	类型
+	年份
+	剧名
+	饰演者
+
+	电视剧
+	1988年
+	《太平天国》
+	刘江
+
+	1990年
+	《满清十三皇朝之血染紫禁城》
+	陈东
+
+	2002年
+	《太平天国》
+	孙飞虎
+
+	2005年
+	《一生为奴》
+	迟国栋
+
+	2007年
+	《船政风云》
+	孙飞虎
+
+	2013年
+	《大国船梦》
+	杜雨露
+
+	电影
+	1987年
+	《两宫皇太后》
+	郑榕
+
+
+
+
+
+
+
+
+
+
+
+新手上路
+成长任务编辑入门编辑规则本人编辑
+
+我有疑问
+内容质疑在线客服官方贴吧意见反馈
+
+投诉建议
+举报不良信息未通过词条申诉投诉侵权信息封禁查询与解封
+
+
+©2025 Baidu 使用百度前必读 | 百科协议 | 隐私政策 | 百度百科合作平台 | 京ICP证030173号 
+京公网安备11000002000001号
+
+
+
+
+
+
+思考：
+
+嗯，用户的问题是“曾国藩是谁？为什么经常能听到有人提起他？他有哪些著作？”我需要先分解这个问题。首先，用户想知道曾国藩的身份，为什么他这么出名，还有他的作品。我记得曾国藩是清朝的名人，涉及军事、政治和文化方面。
+
+先从曾国藩是谁开始。他是清朝的重要人物，对吗？然后他为什么常被提起，可能是因为他的贡献，比如平定太平天国，创立湘军等等。关于他的著作，我记得有《曾文正公全集》和家书之类的。
+
+现在，我需要用可靠的工具来查找这些信息。百度百科是个不错的选择，因为它详细且权威。我应该调用baikeExtension这个工具，搜索“曾国藩”这个词条，获取相关信息。
+
+等待，百度百科的回应里有很多详细信息，包括他的名字、字号、号、封号、出生和逝世时间、主要成就、主要作品等等。我需要从中提取关键点，尤其是著作部分。
+
+看起来他的主要作品有曾文正公全集、治学论道之经、持家教子之术和曾国藩家书。这些都是他写的重要著作，对后世影响深远。
+
+总结一下，曾国藩是因为他在军事和政治上的成就，以及他在文化方面的贡献，常常被人们提起。他的著作不仅体现了他的思想，也是研究晚清历史的重要资料。这就是为什么他这么出名的原因，以及他有哪些著作。
+
+
+回答：
+Thought: 我已经获取到了关于曾国藩的详细信息，可以回答用户的问题。
+Answer: 曾国藩是清朝著名的军事家、政治家和文学家，字伯涵，号涤生，谥文正。他因创立湘军、平定太平天国、参与洋务运动等成就而广为人知。他的著作包括《曾文正公全集》、《治学论道之经》、《持家教子之术》和《曾国藩家书》。
+
+Token：
+ChatResponse.Usage(promptTokens=2672, completionTokens=521, totalTokens=3193)
+
+工具：
+null
+
+错误信息：
+null

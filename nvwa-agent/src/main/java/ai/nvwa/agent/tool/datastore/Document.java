@@ -114,7 +114,7 @@ public class Document {
      *
      * @author 陈晨
      */
-    public List<Entity> queryByContent(String content) {
+    public List<Entity> queryByContent(String content, int topK) {
         EmbeddingContent titleEmbedding = embeddingService.getEmbeddingContent(content, 1024);
         List<BaseVector> queryDenseVectors = Collections.singletonList(new FloatVec(titleEmbedding.getDenseVectors()));
         return this.buildEntity(milvusTemplate.search().search(SearchReq.builder()
@@ -123,7 +123,7 @@ public class Document {
                 .annsField("content_dense")
                 .metricType(IndexParam.MetricType.COSINE)
                 .outputFields(List.of("title", "content"))
-                .topK(3)
+                .topK(topK)
                 .searchParams(Collections.singletonMap("drop_ratio_search", 0.33))
                 .build()));
     }
