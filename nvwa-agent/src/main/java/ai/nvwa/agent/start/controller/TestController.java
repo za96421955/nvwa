@@ -6,6 +6,7 @@ import ai.nvwa.agent.arrange.agents.WeatherAgent;
 import ai.nvwa.agent.components.util.HttpClient;
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
+import ai.nvwa.agent.tool.datastore.DataSet;
 import ai.nvwa.agent.tool.datastore.Document;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @description 测试
@@ -32,28 +32,30 @@ public class TestController {
     @Autowired
     private Document document;
     @Autowired
+    private DataSet dataSet;
+    @Autowired
     private WeatherAgent weatherAgent;
     @Autowired
     private BaikeAgent baikeAgent;
 
     @PostMapping("/insert")
-    public Object insert(String title, String content) {
-        return document.insert(title, content);
+    public Object insert(String content) {
+        return dataSet.insert(content);
     }
 
-    @PostMapping("/queryByTitle")
-    public Object queryByTitle(String title) {
-        return document.queryByTitle(title);
+//    @PostMapping("/queryByTitle")
+//    public Object queryByTitle(String title) {
+//        return document.queryByTitle(title);
+//    }
+
+    @PostMapping("/query")
+    public Object query(String content) {
+        return dataSet.query(content, 0.5f);
     }
 
-    @PostMapping("/queryByContent")
-    public Object queryByContent(String content) {
-        return document.queryByContent(content, 0.33f);
-    }
-
-    @PostMapping("/queryByContents")
-    public Object queryByContents(@RequestParam List<String> contents) {
-        return document.queryByContents(contents);
+    @PostMapping("/queryRanker")
+    public Object queryRanker(@RequestParam List<String> contents) {
+        return dataSet.queryRanker(contents);
     }
 
     @PostMapping("/weatherAgent")

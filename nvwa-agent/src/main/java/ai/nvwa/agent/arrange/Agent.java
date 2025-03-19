@@ -1,12 +1,10 @@
 package ai.nvwa.agent.arrange;
 
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
-import ai.nvwa.agent.model.chat.mode.ChatResponse;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
 import ai.nvwa.agent.tool.function.Function;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 智能体
