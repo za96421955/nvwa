@@ -1,5 +1,6 @@
 package ai.nvwa.agent.tool.datastore.extract;
 
+import ai.nvwa.agent.components.util.HttpClient;
 import ai.nvwa.agent.tool.datastore.extract.mode.Chunk;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
@@ -255,26 +256,11 @@ public class Extractor {
     }
 
     public static void main(String[] args) {
-        String filePath = "/Users/chenchen/Downloads/test.docx";
-        String baikeUrl = "https://baike.baidu.com/item/%s?fromModule=lemma_search-box";
-        String url = String.format(baikeUrl, "%E6%B0%91%E6%B3%95%E5%85%B8%E5%A9%9A%E5%A7%BB%E5%AE%B6%E5%BA%AD%E7%BC%96%EF%BC%88%E8%8D%89%E6%A1%88%EF%BC%89");
-
-        Extractor tika = new Extractor();
-//        Map<String, String> metas = tika.metadataExtractor(filePath);
-//        System.out.println("\n\n元数据:");
-//        System.out.println(metas);
-
-        String content = tika.urlExtractor(url);
-        List<Chunk> chunks = tika.splitChunks(content);
-        System.out.println("\n\n分块:");
-        int i = 0;
-        for (Chunk chunk : chunks) {
-            System.out.println("\n\n<<<" + (++i) + ">>>");
-            System.out.println("Metas: ");
-            System.out.println(chunk.getMetas());
-            System.out.println("Text: ");
-            System.out.println(chunk.getText());
-        }
+        String url = "https://www.baidu.com/s?wd=Agent%E6%9E%B6%E6%9E%84";
+        String html = HttpClient.get(url)
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0")
+                .asString();
+        System.out.println(html);
     }
 
 }

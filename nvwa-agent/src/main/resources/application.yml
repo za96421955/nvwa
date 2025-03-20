@@ -7,6 +7,11 @@ server:
   tomcat:
     uri-encoding: utf-8
 
+websocket:
+  port: 8081
+  path: /agent
+  handler: ai.nvwa.agent.start.websokect.DefaultWebSocketServerHandler
+
 spring:
   profiles:
       active: dev

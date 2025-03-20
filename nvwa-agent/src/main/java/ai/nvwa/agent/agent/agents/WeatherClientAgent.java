@@ -1,9 +1,8 @@
-package ai.nvwa.agent.arrange.agents;
+package ai.nvwa.agent.agent.agents;
 
-import ai.nvwa.agent.arrange.AbstractAgent;
+import ai.nvwa.agent.agent.AbstractSerialAgent;
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
-import ai.nvwa.agent.prompt.ExtensionPrompt;
 import ai.nvwa.agent.tool.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,7 +19,7 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class WeatherClientAgent extends AbstractAgent {
+public class WeatherClientAgent extends AbstractSerialAgent {
 
     @Override
     public String action() {
@@ -42,25 +41,12 @@ public class WeatherClientAgent extends AbstractAgent {
         return 5;
     }
 
-    /**
-     * @description 关联函数/扩展
-     * <p> <功能详细描述> </p>
-     *
-     * @author 陈晨
-     */
     @Override
     public List<Function> association() {
         List<Function> extensions = new ArrayList<>();
         extensions.add(functionMap.get("addressExtension"));
-//        extensions.add(functionMap.get("districtExtension"));
-//        extensions.add(functionMap.get("weatherExtension"));
         extensions.add(functionMap.get("clientWeatherFunction"));
         return extensions;
-    }
-
-    @Override
-    public String prompt() {
-        return ExtensionPrompt.DEFAULT;
     }
 
     @Override
@@ -75,7 +61,7 @@ public class WeatherClientAgent extends AbstractAgent {
             System.out.println("\n思考：\n" + chatResult.getValue().getReasoning());
             System.out.println("\n回答：\n" + chatResult.getValue().getContent());
             System.out.println("\nToken：\n" + chatResult.getValue().getUsage());
-            System.out.println("\n工具：\n" + chatResult.getValue().getAction());
+            System.out.println("\n工具：\n" + chatResult.getValue().getActions());
             System.out.println("\n错误信息：\n" + chatResult.getValue().getErrorMsg());
         }
     }

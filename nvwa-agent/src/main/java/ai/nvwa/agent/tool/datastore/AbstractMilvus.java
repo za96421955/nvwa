@@ -212,6 +212,16 @@ public abstract class AbstractMilvus {
      */
     protected abstract Entity buildEntity(SearchResp.SearchResult result);
 
+    /**
+     * @description 重复数据检查
+     * <p> <功能详细描述> </p>
+     *
+     * @author 陈晨
+     */
+    protected boolean isRepeat(String content) {
+        return !CollectionUtils.isEmpty(this.query(content, 0.99f));
+    }
+
 }
 
 

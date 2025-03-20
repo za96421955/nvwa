@@ -160,12 +160,20 @@ public class Document extends AbstractMilvus {
         // 默认512token, 25%重叠
         for (Chunk chunk : extractor.splitChunks(content)) {
             log.info("chunk: metas={}, size={}, text={}", chunk.getMetas(), chunk.getText().length(), chunk.getText());
+            // 重复内容检查
+            if (this.isRepeat(chunk.getText())) {
+                continue;
+            }
+            // 数据入库
             EmbeddingContent contentEmbedding = embeddingService.getEmbeddingContent(chunk.getText(), 1024);
             JsonObject row = new JsonObject();
             row.addProperty("title", title);
             row.addProperty("content", chunk.getText());
             row.add("content_dense", gson.toJsonTree(contentEmbedding.getDenseVectors()));
             rows.add(row);
+        }
+        if (CollectionUtils.isEmpty(rows)) {
+            return 0;
         }
         return milvusTemplate.data().insert(this.getCollectionName(), rows);
     }

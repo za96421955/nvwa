@@ -1,4 +1,4 @@
-package ai.nvwa.agent.arrange;
+package ai.nvwa.agent.agent;
 
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
@@ -94,20 +94,12 @@ public interface Agent {
         void assistantBefore(int loop, ChatRequest request);
 
         /**
-         * @description 思考中
-         * <p> <功能详细描述> </p>
-         *
-         * @author 陈晨
-         */
-        void reasoning(int loop, String reasoning);
-
-        /**
          * @description 回答中
          * <p> <功能详细描述> </p>
          *
          * @author 陈晨
          */
-        void content(int loop, String content);
+        void assistant(int loop, ChatResult result);
 
         /**
          * @description 对话后

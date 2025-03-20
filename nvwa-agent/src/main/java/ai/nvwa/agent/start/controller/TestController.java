@@ -1,9 +1,9 @@
 package ai.nvwa.agent.start.controller;
 
-import ai.nvwa.agent.arrange.Agent;
-import ai.nvwa.agent.arrange.agents.BaikeAgent;
-import ai.nvwa.agent.arrange.agents.WeatherAgent;
-import ai.nvwa.agent.arrange.agents.WeatherClientAgent;
+import ai.nvwa.agent.agent.Agent;
+import ai.nvwa.agent.agent.agents.BaikeAgent;
+import ai.nvwa.agent.agent.agents.WeatherAgent;
+import ai.nvwa.agent.agent.agents.WeatherClientAgent;
 import ai.nvwa.agent.components.util.HttpClient;
 import ai.nvwa.agent.model.chat.mode.ChatRequest;
 import ai.nvwa.agent.model.chat.mode.ChatResult;
@@ -68,13 +68,9 @@ public class TestController {
             public void assistantBefore(int loop, ChatRequest request) {}
 
             @Override
-            public void reasoning(int loop, String reasoning) {
-                System.out.println("思考中：" + reasoning);
-            }
-
-            @Override
-            public void content(int loop, String content) {
-                System.out.println("回答中：" + content);
+            public void assistant(int loop, ChatResult result) {
+                log.info("思考中：" + result.getReasoning());
+                log.info("回答中：" + result.getContent());
             }
 
             @Override
@@ -89,13 +85,9 @@ public class TestController {
             public void assistantBefore(int loop, ChatRequest request) {}
 
             @Override
-            public void reasoning(int loop, String reasoning) {
-                System.out.println("思考中：" + reasoning);
-            }
-
-            @Override
-            public void content(int loop, String content) {
-                System.out.println("回答中：" + content);
+            public void assistant(int loop, ChatResult result) {
+                log.info("思考中：" + result.getReasoning());
+                log.info("回答中：" + result.getContent());
             }
 
             @Override
@@ -110,13 +102,9 @@ public class TestController {
             public void assistantBefore(int loop, ChatRequest request) {}
 
             @Override
-            public void reasoning(int loop, String reasoning) {
-                System.out.println("思考中：" + reasoning);
-            }
-
-            @Override
-            public void content(int loop, String content) {
-                System.out.println("回答中：" + content);
+            public void assistant(int loop, ChatResult result) {
+                log.info("思考中：" + result.getReasoning());
+                log.info("回答中：" + result.getContent());
             }
 
             @Override

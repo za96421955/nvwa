@@ -259,30 +259,28 @@ public class HttpClient {
      * @author 陈晨
      */
 	public static String getRemoteAddr(HttpServletRequest request) {
-		if (request == null) return null;
-		//
-		String remoteAddr;
+		if (request == null) {
+		    return null;
+        }
+		String clientIp;
 		// X-Forwarded-For
 		String xff = request.getHeader("X-Forwarded-For");
-		remoteAddr = (xff == null ? request.getHeader("x-forwarded-for") : xff);
+        clientIp = (xff == null ? request.getHeader("x-forwarded-for") : xff);
 		// Proxy-Client-IP
-		if (remoteAddr == null || "".equals(remoteAddr)) {
+        if (StringUtils.isBlank(clientIp)) {
 			String pci = request.getHeader("Proxy-Client-IP");
-			remoteAddr = (pci == null ? request.getHeader("proxy-client-ip") : pci);
+            clientIp = (pci == null ? request.getHeader("proxy-client-ip") : pci);
 		}
 		// WL-Proxy-Client-IP
-		if (remoteAddr == null || "".equals(remoteAddr)) {
+        if (StringUtils.isBlank(clientIp)) {
 			String wpci = request.getHeader("WL-Proxy-Client-IP");
-			remoteAddr = (wpci == null ? request.getHeader("wl-proxy-client-ip") : wpci);
+            clientIp = (wpci == null ? request.getHeader("wl-proxy-client-ip") : wpci);
 		}
 		// RemoteAddr
-		if (remoteAddr == null || "".equals(remoteAddr)) {
-			remoteAddr = request.getRemoteAddr();
-		} else {
-			remoteAddr = remoteAddr.split(",")[0];
+        if (StringUtils.isBlank(clientIp)) {
+            clientIp = request.getRemoteAddr();
 		}
-
-		return remoteAddr;
+		return clientIp.split(",")[0].trim();
 	}
 
 }

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 对话响应
@@ -30,7 +31,7 @@ public class ChatResult implements Serializable {
     /** Token 使用情况 */
     private ChatResponse.Usage usage;
     /** 调用的 Action */
-    private Action action;
+    private List<Action> actions;
 
     public ChatResult() {
         this.reasoning = new StringBuilder();

@@ -5,7 +5,7 @@ package ai.nvwa.agent.components;
  * <p> <功能详细描述> </p>
  */
 public enum ErrorEnum implements BaseError {
-    SUCCESS(200, "请成功"),
+    SUCCESS(200, "成功"),
     FAIL(500, "失败"),
     EXCEPTION(9999, "系统异常"),
 

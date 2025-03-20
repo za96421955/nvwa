@@ -21,12 +21,21 @@ import java.io.Serializable;
 public class Action implements Serializable {
     private static final long serialVersionUID = -993585501587766955L;
 
-    /** 名称 */
+    /** 思考 */
+    private String thought;
+    /** 动作 */
     private String action;
     /** 输入 */
     private JSONObject input;
+    /** 起始位置 */
+    private int start;
     /** 响应 */
     private String response;
+
+    @Override
+    public String toString() {
+        return JSONObject.toJSONString(this);
+    }
 
 }
 
