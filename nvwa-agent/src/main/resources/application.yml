@@ -10,7 +10,7 @@ server:
 websocket:
   port: 8081
   path: /agent
-  handler: ai.nvwa.agent.start.websokect.DefaultWebSocketServerHandler
+  handler: ai.nvwa.start.websokect.DefaultWebSocketServerHandler
 
 spring:
   profiles:

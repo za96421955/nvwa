@@ -77,7 +77,7 @@
     </root>
 
     <!--打印sql至sqlFile文件日志-->
-    <logger name="ai.nvwa.agent.dal.mapper" level="DEBUG" additivity="false">
+    <logger name="ai.nvwa.tool.datastore.dal.mapper" level="DEBUG" additivity="false">
         <appender-ref ref="console" />
         <appender-ref ref="sqlFile" />
     </logger>

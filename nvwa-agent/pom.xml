@@ -295,7 +295,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>ai.nvwa.agent.start.NvwaAgentApplication</mainClass>
+                    <mainClass>ai.nvwa.start.NvwaAgentApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>
