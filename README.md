@@ -2,7 +2,7 @@
 
 ## JDK
 ```
-<java.version>17</java.version>
+17+
 ```
 
 ## 环境变量
