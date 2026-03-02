@@ -1,0 +1,51 @@
+spring:
+  main:
+    web-application-type: none
+  shell:
+    interactive:
+      enabled: false
+    noninteractive:
+      enabled: true
+    command:
+      version:
+        enabled: false
+
+
+---
+spring:
+  ai:
+    # https://java2ai.com/integration/chatmodels/openai-compatible
+#    model:
+#      chat: openai                # 现在通过前缀为 spring.ai.model.chat 的顶级属性来配置 chat auto-configurations 的启用和禁用。
+    openai:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      api-key: ${AI_API_KEY}
+      organization-id:            # 可选地，您可以指定用于 API 请求的组织。
+      project-id:                 # 可选地，您可以指定用于 API 请求的项目。
+      chat:
+#        enabled: true             # 启用 OpenAI chat model。
+        options:
+          model: qwen-plus        # 要使用的 DashScope chat model 名称。您可以在以下模型之间选择：qwen-plus、qwen-turbo、qwen-max、qwen-max-longcontext、qwen-vl-plus、qwen-vl-max 等。有关更多信息，请参阅 DashScope 模型列表。
+          temperature: 0.85       # 用于控制生成 completions 的明显创造力的采样 temperature。较高的值将使输出更加随机，而较低的值将使结果更加聚焦和确定性。范围：[0, 2)，系统默认：0.85。不建议为同一个 completions 请求修改 temperature 和 top_p，因为这两个设置的交互很难预测。
+          topP: 0.8               # 除了 temperature 采样之外，还有一种称为 nucleus sampling 的替代方法，其中模型考虑具有 top_p 概率质量的 tokens 结果。因此，0.1 意味着只考虑包含 top 10% 概率质量的 tokens。范围：(0, 1.0)，默认：0.8。我们通常建议修改此值或 temperature，但不要同时修改两者。
+    retry:
+      max-attempts: 10            # 最大重试次数
+      backoff:
+        initial-interval: 2000    # 指数退避策略的初始睡眠持续时间。
+        multiplier: 5             # 退避间隔乘数。
+        max-interval: 180000      # 最大退避持续时间。
+      on-client-errors: false     # 如果为 false，抛出 NonTransientAiException，并且不对 4xx 客户端错误代码尝试重试
+      exclude-on-http-codes:      # 不应触发重试的 HTTP 状态代码列表（例如，抛出 NonTransientAiException）。
+      on-http-codes:              # 应触发重试的 HTTP 状态代码列表（例如，抛出 TransientAiException）。
+
+---
+# log setting
+logging:
+  level:
+    com:
+      alibaba:
+        nacos:
+          client:
+            naming: warn
+
+
