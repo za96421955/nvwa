@@ -60,9 +60,8 @@ java -jar target/nvwa.jar
 项目目录：/Users/chenchen/Desktop/3，工作/item
 在我明确可以操作前，不要做任何执行
 1. 删除并重新从master拉取 feature/ai-code 分支
-2. 优化所有 controller 注释
-3. maven 编译打包
-4. 提交并推送 git，日志“ai编程”
+2. 根据 /Users/chenchen/Desktop/SDD.md 文档修改代码
+3. 提交并推送 git，添加日志
 ```
 
 ## !!!
