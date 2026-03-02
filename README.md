@@ -59,9 +59,9 @@ java -jar target/nvwa.jar
 /new
 项目目录：/Users/chenchen/Desktop/3，工作/item
 在我明确可以操作前，不要做任何执行
-1. 删除并重新从master拉取 feature/ai-code 分支
+1. 从master拉取 feature/ai-code 分支
 2. 根据 /Users/chenchen/Desktop/SDD.md 文档修改代码
-3. 提交并推送 git，添加日志
+3. 提交并推送 git，添加变更日志（详细）
 ```
 
 ## !!!
